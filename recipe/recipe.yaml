@@ -1,7 +1,6 @@
 context:
   version: 0.4.4
   build_number: 0
-  disk_space_debug_cmd: python -c "import os, shutil; total, used, free = shutil.disk_usage(os.getcwd()); gib = 1024**3; print(f'[disk] cwd={os.getcwd()} free={free/gib:.2f} GiB used={used/gib:.2f} GiB total={total/gib:.2f} GiB')"
   # These are a subset of the tests that are representative of the different submodules of lerobot
   # and that are not too heavy to run in package creation phase
   representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/utils/test_io_utils.py tests/utils/test_encoding_utils.py tests/optim/test_schedulers.py
@@ -15,6 +14,16 @@ source:
   sha256: 7d98acd389db309b650585ccd95dda31789b81c4bbaa1955c1d91578a91d2522
   patches:
     - drop_cmake_pypi_dep.patch
+- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_128x128.png
+  target_directory: tests/artifacts/cameras
+- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_160x120.png
+  target_directory: tests/artifacts/cameras
+- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_320x180.png
+  target_directory: tests/artifacts/cameras
+- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_480x270.png
+  target_directory: tests/artifacts/cameras
+- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/test_rs.bag
+  target_directory: tests/artifacts/cameras
 
 build:
   number: ${{ build_number }}
@@ -90,8 +99,6 @@ outputs:
         - lerobot
         pip_check: true
         python_version: ${{ python_min }}.*
-    - script:
-      - ${{ disk_space_debug_cmd }}
 
   # In the following, all the Python extra dependencies like 
   # lerobot[pygame-dep] are modeled by separate lerobot-pygame-dep output
@@ -135,9 +142,6 @@ outputs:
         - lerobot
         pip_check: false
         python_version: ${{ python_min }}.*
-    - script:
-      - ${{ disk_space_debug_cmd }}
-
 
   # The tests files are non-neglibile in size, so we put them in a separate package
   - package:
@@ -161,7 +165,6 @@ outputs:
           run:
             - pytest
         script:
-          - ${{ disk_space_debug_cmd }}
           - if: linux
             then: export MUJOCO_GL="egl"
           # Workaround for https://github.com/conda-forge/gymnasium-feedstock/pull/50#issuecomment-3218125344
@@ -187,7 +190,6 @@ outputs:
         - pygame >=2.5.1,<2.7.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -201,7 +203,6 @@ outputs:
         - placo >=0.9.6,<0.10.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -215,7 +216,6 @@ outputs:
         - transformers >=4.57.1,<5.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -230,7 +230,6 @@ outputs:
         - protobuf >=6.31.1,<6.32.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -244,7 +243,6 @@ outputs:
         - python-can >=4.2.0,<5.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -258,7 +256,6 @@ outputs:
         - ftservo-python-sdk
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -272,7 +269,6 @@ outputs:
         - dynamixel-sdk >=3.7.31,<3.9.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -286,7 +282,6 @@ outputs:
         - ${{ pin_subpackage('lerobot-can-dep', exact=True) }}
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -300,7 +295,6 @@ outputs:
         - ${{ pin_subpackage('lerobot-can-dep', exact=True) }}
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -314,7 +308,6 @@ outputs:
         - ${{ pin_subpackage('lerobot-damiao', exact=True) }}
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -329,7 +322,6 @@ outputs:
         - hidapi >=0.14.0,<0.15.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -344,7 +336,6 @@ outputs:
         - ${{ pin_subpackage('lerobot-pygame-dep', exact=True) }}
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -359,7 +350,6 @@ outputs:
         - pyzmq >=26.2.1,<28.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -373,7 +363,6 @@ outputs:
         - ${{ pin_subpackage('lerobot-placo-dep', exact=True) }}
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -389,7 +378,6 @@ outputs:
         - pyrealsense2 >=2.55.1
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -408,7 +396,6 @@ outputs:
         - casadi >=3.6.0,<4.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -422,7 +409,6 @@ outputs:
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -439,7 +425,6 @@ outputs:
         - safetensors >=0.4.3,<1.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -454,8 +439,7 @@ outputs:
         - matplotlib-base >=3.10.3,<4.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
-          - echo "tested in lerobot-tests"
+         - echo "tested in lerobot-tests"
 
   - package:
       name: lerobot-aloha
@@ -468,7 +452,6 @@ outputs:
         - gym-aloha >=0.1.2,<0.2.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -483,7 +466,6 @@ outputs:
         - pymunk >=6.6.0,<7.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
   - package:
@@ -498,7 +480,6 @@ outputs:
         - peft >=0.18.0,<1.0.0
     tests:
       - script:
-          - ${{ disk_space_debug_cmd }}
           - echo "tested in lerobot-tests"
 
 about:
