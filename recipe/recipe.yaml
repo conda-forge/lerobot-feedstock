@@ -1,5 +1,5 @@
 context:
-  version: 0.4.4
+  version: "0.5.0"
   build_number: 0
   disk_space_debug_cmd: python -c "import os, shutil; total, used, free = shutil.disk_usage(os.getcwd()); gib = 1024**3; print(f'[disk] cwd={os.getcwd()} free={free/gib:.2f} GiB used={used/gib:.2f} GiB total={total/gib:.2f} GiB')"
   # These are a subset of the tests that are representative of the different submodules of lerobot
@@ -11,10 +11,10 @@ recipe:
   version: ${{ version }}
 
 source:
-- url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 7d98acd389db309b650585ccd95dda31789b81c4bbaa1955c1d91578a91d2522
-  patches:
-    - drop_cmake_pypi_dep.patch
+  - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
+    sha256: e7205d5ab8f2a4243f3f3015e8cc968112cd5e033c30a1a291a6ff8981cd3b77
+    patches:
+      - drop_cmake_pypi_dep.patch
 
 build:
   number: ${{ build_number }}
@@ -27,73 +27,73 @@ outputs:
       script: ${{ PYTHON }} -m pip install .
       python:
         entry_points:
-        - lerobot-calibrate = lerobot.scripts.lerobot_calibrate:main
-        - lerobot-find-cameras = lerobot.scripts.lerobot_find_cameras:main
-        - lerobot-find-port = lerobot.scripts.lerobot_find_port:main
-        - lerobot-record = lerobot.scripts.lerobot_record:main
-        - lerobot-replay = lerobot.scripts.lerobot_replay:main
-        - lerobot-setup-motors = lerobot.scripts.lerobot_setup_motors:main
-        - lerobot-teleoperate = lerobot.scripts.lerobot_teleoperate:main
-        - lerobot-eval = lerobot.scripts.lerobot_eval:main
-        - lerobot-train = lerobot.scripts.lerobot_train:main
-        - lerobot-train-tokenizer = lerobot.scripts.lerobot_train_tokenizer:main
-        - lerobot-dataset-viz = lerobot.scripts.lerobot_dataset_viz:main
-        - lerobot-info = lerobot.scripts.lerobot_info:main
-        - lerobot-find-joint-limits = lerobot.scripts.lerobot_find_joint_limits:main
-        - lerobot-imgtransform-viz = lerobot.scripts.lerobot_imgtransform_viz:main
-        - lerobot-edit-dataset = lerobot.scripts.lerobot_edit_dataset:main
-        - lerobot-setup-can = lerobot.scripts.lerobot_setup_can:main
-    
+          - lerobot-calibrate = lerobot.scripts.lerobot_calibrate:main
+          - lerobot-find-cameras = lerobot.scripts.lerobot_find_cameras:main
+          - lerobot-find-port = lerobot.scripts.lerobot_find_port:main
+          - lerobot-record = lerobot.scripts.lerobot_record:main
+          - lerobot-replay = lerobot.scripts.lerobot_replay:main
+          - lerobot-setup-motors = lerobot.scripts.lerobot_setup_motors:main
+          - lerobot-teleoperate = lerobot.scripts.lerobot_teleoperate:main
+          - lerobot-eval = lerobot.scripts.lerobot_eval:main
+          - lerobot-train = lerobot.scripts.lerobot_train:main
+          - lerobot-train-tokenizer = lerobot.scripts.lerobot_train_tokenizer:main
+          - lerobot-dataset-viz = lerobot.scripts.lerobot_dataset_viz:main
+          - lerobot-info = lerobot.scripts.lerobot_info:main
+          - lerobot-find-joint-limits = lerobot.scripts.lerobot_find_joint_limits:main
+          - lerobot-imgtransform-viz = lerobot.scripts.lerobot_imgtransform_viz:main
+          - lerobot-edit-dataset = lerobot.scripts.lerobot_edit_dataset:main
+          - lerobot-setup-can = lerobot.scripts.lerobot_setup_can:main
+
     requirements:
       host:
-      - python ${{ python_min }}.*
-      - setuptools
-      - pip
+        - python ${{ python_min }}.*
+        - setuptools
+        - pip
       run:
-      - python >=${{ python_min }}
-      - datasets >=4.0.0,<5.0.0
-      - diffusers >=0.27.2,<0.36.0
-      - huggingface_hub >=0.34.2,<0.36.0
+        - python >=${{ python_min }}
+        - datasets >=4.0.0,<5.0.0
+        - diffusers >=0.27.2,<0.36.0
+        - huggingface_hub >=0.34.2,<0.36.0
       # This is from https://github.com/huggingface/huggingface_hub/blob/v0.34.3/setup.py#L47.
       # huggingface-hub[hf-transfer]
-      - hf-transfer >=0.1.4
+        - hf-transfer >=0.1.4
       # huggingface-hub[cli]
-      - inquirerpy ==0.3.4
-      - accelerate >=1.10.0,<2.0.0
-      - setuptools >=71.0.0,<81.0.0
-      - cmake >=3.29.0.1,<4.2.0
-      - einops >=0.8.0,<0.9.0
-      - py-opencv >=4.9.0,<4.13.0
-      - av >=15.0.0,<16.0.0
-      - jsonlines >=4.0.0,<5.0.0
-      - packaging >=24.2,<26.0
-      - pynput >=1.7.7,<1.9.0
-      - pyserial >=3.5,<4.0
-      - wandb >=0.24.0,<0.25.0
-      - draccus ==0.10.0
-      - gymnasium >=1.1.1,<2.0.0
-      - rerun-sdk >=0.24.0,<0.27.0
-      - deepdiff >=7.0.1,<9.0.0
-      - imageio >=2.34.0,<3.0.0
-      - imageio-ffmpeg
-      - termcolor >=2.4.0,<4.0.0
-      - pytorch >=2.2.1,<2.11.0
+        - inquirerpy ==0.3.4
+        - accelerate >=1.10.0,<2.0.0
+        - setuptools >=71.0.0,<81.0.0
+        - cmake >=3.29.0.1,<4.2.0
+        - einops >=0.8.0,<0.9.0
+        - py-opencv >=4.9.0,<4.13.0
+        - av >=15.0.0,<16.0.0
+        - jsonlines >=4.0.0,<5.0.0
+        - packaging >=24.2,<26.0
+        - pynput >=1.7.7,<1.9.0
+        - pyserial >=3.5,<4.0
+        - wandb >=0.24.0,<0.25.0
+        - draccus ==0.10.0
+        - gymnasium >=1.1.1,<2.0.0
+        - rerun-sdk >=0.24.0,<0.27.0
+        - deepdiff >=7.0.1,<9.0.0
+        - imageio >=2.34.0,<3.0.0
+        - imageio-ffmpeg
+        - termcolor >=2.4.0,<4.0.0
+        - pytorch >=2.2.1,<2.11.0
       # torchvision and torchcodec are strictly bound in PyPI metadata
       # as they are ABI constrained but this is not reflected in their PyPI
       # metadata, but as in conda-forge this ABI constraint is reflected,
       # we can relax the version constraints here 
-      - torchvision >=0.21.0
-      - torchcodec >=0.2.1
+        - torchvision >=0.21.0
+        - torchcodec >=0.2.1
 
-    
+
     tests:
-    - python:
-        imports:
-        - lerobot
-        pip_check: true
-        python_version: ${{ python_min }}.*
-    - script:
-      - ${{ disk_space_debug_cmd }}
+      - python:
+          imports:
+            - lerobot
+          pip_check: true
+          python_version: ${{ python_min }}.*
+      - script:
+          - ${{ disk_space_debug_cmd }}
 
   # In the following, all the Python extra dependencies like 
   # lerobot[pygame-dep] are modeled by separate lerobot-pygame-dep output
@@ -132,13 +132,13 @@ outputs:
         - ${{ pin_subpackage('lerobot-pusht', exact=True) }}
 
     tests:
-    - python:
-        imports:
-        - lerobot
-        pip_check: false
-        python_version: ${{ python_min }}.*
-    - script:
-      - ${{ disk_space_debug_cmd }}
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+      - script:
+          - ${{ disk_space_debug_cmd }}
 
 
   # The tests files are non-neglibile in size, so we put them in a separate package
@@ -172,9 +172,9 @@ outputs:
           # Ensure that pygame tests pass on unix,
           # see https://github.com/conda-forge/gymnasium-feedstock/pull/36#issuecomment-2124699477
           - if: unix
-            then: export SDL_VIDEODRIVER="dummy"
-          - if: unix
-            then: pytest -v ${{ representative_tests }}
+            then:
+              - export SDL_VIDEODRIVER="dummy"
+              - pytest -v ${{ representative_tests }}
           - if: win
             then: pytest -v ${{ representative_tests }}
 
