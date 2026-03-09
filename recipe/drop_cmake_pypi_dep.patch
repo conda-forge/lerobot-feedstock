@@ -5,20 +5,24 @@ Subject: [PATCH] Update pyproject.toml
 
 Signed-off-by: Silvio Traversaro <silvio@traversaro.it>
 ---
- pyproject.toml | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ pyproject.toml | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/pyproject.toml b/pyproject.toml
 index f4fb7d24967..1342ca30d33 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
-@@ -66,7 +66,8 @@ dependencies = [
- 
+@@ -66,7 +66,10 @@ dependencies = [
+
      # Core dependencies
-     "setuptools>=71.0.0,<81.0.0",
+-    "setuptools>=71.0.0,<81.0.0",
++    # setuptools is pinned upstream to deal with package build failing, not required in conda-forge
++    # "setuptools>=71.0.0,<81.0.0",
 -    "cmake>=3.29.0.1,<4.2.0",
-+    # In conda-forge cmake does not install pypi metadata
++    # In conda-forge cmake does not install pypi metadata, and as conda-forge does not compile packages no cmake is required
 +    # "cmake>=3.29.0.1,<4.2.0",
      "einops>=0.8.0,<0.9.0",
-     "opencv-python-headless>=4.9.0,<4.13.0",
+-    "opencv-python-headless>=4.9.0,<4.13.0",
++    # upper bound in opencv upstream is done to help the solver, this is not necessary in conda-forge
++    "opencv-python-headless>=4.9.0",
      "av>=15.0.0,<16.0.0",

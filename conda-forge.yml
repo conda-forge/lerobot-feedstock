@@ -1,4 +1,8 @@
 conda_build_tool: rattler-build
+conda_install_tool: pixi
+remote_ci_setup:
+  # Workaround for https://github.com/conda-forge/lerobot-feedstock/issues/1
+  - "rattler-build<0.58.0"
 github:
   branch_name: main
   tooling_branch_name: main
