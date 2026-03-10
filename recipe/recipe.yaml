@@ -1,5 +1,5 @@
 context:
-  version: 0.4.4
+  version: "0.5.0"
   build_number: 0
   # These are a subset of the tests that are representative of the different submodules of lerobot
   # and that are not too heavy to run in package creation phase
@@ -11,7 +11,7 @@ recipe:
 
 source:
 - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 7d98acd389db309b650585ccd95dda31789b81c4bbaa1955c1d91578a91d2522
+  sha256: e7205d5ab8f2a4243f3f3015e8cc968112cd5e033c30a1a291a6ff8981cd3b77
   patches:
     - drop_cmake_pypi_dep.patch
 - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_128x128.png
