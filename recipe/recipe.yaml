@@ -1,6 +1,8 @@
 context:
-  version: 0.4.4
+  version: "0.5.0"
   build_number: 0
+  # This is overridden for consistency with upstream metadata
+  python_min: "3.12"
   # These are a subset of the tests that are representative of the different submodules of lerobot
   # and that are not too heavy to run in package creation phase
   representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/utils/test_io_utils.py tests/utils/test_encoding_utils.py tests/optim/test_schedulers.py
@@ -11,9 +13,9 @@ recipe:
 
 source:
 - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 7d98acd389db309b650585ccd95dda31789b81c4bbaa1955c1d91578a91d2522
+  sha256: e7205d5ab8f2a4243f3f3015e8cc968112cd5e033c30a1a291a6ff8981cd3b77
   patches:
-    - drop_cmake_pypi_dep.patch
+    - patch_pypi_deps_metadata.patch
 - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_128x128.png
   sha256: 9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b
   target_directory: tests/artifacts/cameras
@@ -67,19 +69,15 @@ outputs:
       - python >=${{ python_min }}
       - datasets >=4.0.0,<5.0.0
       - diffusers >=0.27.2,<0.36.0
-      - huggingface_hub >=0.34.2,<0.36.0
-      # This is from https://github.com/huggingface/huggingface_hub/blob/v0.34.3/setup.py#L47.
-      # huggingface-hub[hf-transfer]
-      - hf-transfer >=0.1.4
-      # huggingface-hub[cli]
-      - inquirerpy ==0.3.4
+      - huggingface_hub >=1.0.0,<2.0.0
       - accelerate >=1.10.0,<2.0.0
+      - numpy >=2.0.0
       - einops >=0.8.0,<0.9.0
       - py-opencv >=4.9.0
       - av >=15.0.0,<16.0.0
       - jsonlines >=4.0.0,<5.0.0
       - packaging >=24.2,<26.0
-      - pynput >=1.7.7,<1.9.0
+      - pynput >=1.7.8,<1.9.0
       - pyserial >=3.5,<4.0
       - wandb >=0.24.0,<0.25.0
       - draccus ==0.10.0
@@ -105,22 +103,6 @@ outputs:
         pip_check: true
         python_version: ${{ python_min }}.*
 
-  # In the following, all the Python extra dependencies like 
-  # lerobot[pygame-dep] are modeled by separate lerobot-pygame-dep output
-  # 
-  # Almost all the extra in the lerobot package are packaged as lerobot-* 
-  # outputs in this recipe, with the exception of:
-  # - dev, test and video_benchmark: as they are listed as "dev" extras
-  # - reachy: as reachy2-sdk is not available on conda-forge
-  # - pi: as it depends on branch of transfomers, and it is not included in lerobot[all]
-  # - libero: as the hf-libero dependency is not available on conda-forge
-  # - metaworld: as the metaworld dependency is not available on conda-forge
-  # - groot: as it is not clear which flash-attn and decord dependencies 
-  #          are actually there, and it is not included in lerobot[all]
-  # - phone: as telop and hebi-py are not in conda-forge
-  # - wallx: as it is not included in lerobot[all] 
-  # - sarm: as it requires qwen-vl-utils that is not in conda-forge
-  # - hilserl: as it requires gym-hil that is not in conda-forge
   - package:
       name: lerobot-all
     requirements:
@@ -130,10 +112,9 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot-dynamixel', exact=True) }}
         - ${{ pin_subpackage('lerobot-gamepad', exact=True) }}
-        - ${{ pin_subpackage('lerobot-hopejr', exact=True) }}
-        - ${{ pin_subpackage('lerobot-lekiwi', exact=True) }}
         - ${{ pin_subpackage('lerobot-kinematics', exact=True) }}
         - ${{ pin_subpackage('lerobot-intelrealsense', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pi', exact=True) }}
         - ${{ pin_subpackage('lerobot-smolvla', exact=True) }}
         - ${{ pin_subpackage('lerobot-xvla', exact=True) }}
         - ${{ pin_subpackage('lerobot-async', exact=True) }}
@@ -205,7 +186,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - placo >=0.9.6,<0.10.0
+        - placo >=0.9.6
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -218,7 +199,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - transformers >=4.57.1,<5.0.0
+        - transformers >=5.3.0,<6.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -238,6 +219,46 @@ outputs:
           - echo "tested in lerobot-tests"
 
   - package:
+      name: lerobot-peft-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - peft >=0.18.0,<1.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-scipy-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - scipy >=1.14.0,<2.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-matplotlib-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - matplotlib-base >=3.10.3,<4.0.0
+        - contourpy >=1.3.0,<2.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
       name: lerobot-can-dep
     requirements:
       host:
@@ -246,19 +267,6 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - python-can >=4.2.0,<5.0.0
-    tests:
-      - script:
-          - echo "tested in lerobot-tests"
-
-  - package:
-      name: lerobot-feetech
-    requirements:
-      host:
-        - python ${{ python_min }}.*
-      run:
-        - python >=${{ python_min }}
-        - ${{ pin_subpackage('lerobot', exact=True) }}
-        - ftservo-python-sdk
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -330,34 +338,6 @@ outputs:
           - echo "tested in lerobot-tests"
 
   - package:
-      name: lerobot-hopejr
-    requirements:
-      host:
-        - python ${{ python_min }}.*
-      run:
-        - python >=${{ python_min }}
-        - ${{ pin_subpackage('lerobot', exact=True) }}
-        - ${{ pin_subpackage('lerobot-feetech', exact=True) }}
-        - ${{ pin_subpackage('lerobot-pygame-dep', exact=True) }}
-    tests:
-      - script:
-          - echo "tested in lerobot-tests"
-
-  - package:
-      name: lerobot-lekiwi
-    requirements:
-      host:
-        - python ${{ python_min }}.*
-      run:
-        - python >=${{ python_min }}
-        - ${{ pin_subpackage('lerobot', exact=True) }}
-        - ${{ pin_subpackage('lerobot-feetech', exact=True) }}
-        - pyzmq >=26.2.1,<28.0.0
-    tests:
-      - script:
-          - echo "tested in lerobot-tests"
-
-  - package:
       name: lerobot-kinematics
     requirements:
       host:
@@ -381,24 +361,6 @@ outputs:
         # We do not include the upper bound as conda-forge includes
         # librealse 2.57 that is not include in pypi
         - pyrealsense2 >=2.55.1
-    tests:
-      - script:
-          - echo "tested in lerobot-tests"
-
-  - package:
-      name: lerobot-unitree-g1
-    requirements:
-      host:
-        - python ${{ python_min }}.*
-      run:
-        - python >=${{ python_min }}
-        - ${{ pin_subpackage('lerobot', exact=True) }}
-        - pyzmq >=26.2.1,<28.0.0
-        - onnxruntime >=1.16.0,<2.0.0
-        - pinocchio-python >=3.0.0,<4.0.0
-        - meshcat-python >=0.3.0,<0.4.0
-        - matplotlib-base >=3.9.0,<4.0.0
-        - casadi >=3.6.0,<4.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -433,6 +395,20 @@ outputs:
           - echo "tested in lerobot-tests"
 
   - package:
+      name: lerobot-pi
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
       name: lerobot-async
     requirements:
       host:
@@ -441,7 +417,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-grpcio-dep', exact=True) }}
-        - matplotlib-base >=3.10.3,<4.0.0
+        - ${{ pin_subpackage('lerobot-matplotlib-dep', exact=True) }}
     tests:
       - script:
          - echo "tested in lerobot-tests"
@@ -482,7 +458,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
-        - peft >=0.18.0,<1.0.0
+        - ${{ pin_subpackage('lerobot-peft-dep', exact=True) }}
     tests:
       - script:
           - echo "tested in lerobot-tests"
