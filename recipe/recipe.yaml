@@ -472,6 +472,7 @@ about:
 
 extra:
   recipe-maintainers:
+    - carloscp3009
     - flferretti
     - traversaro
   feedstock-name: lerobot
