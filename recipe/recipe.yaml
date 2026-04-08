@@ -199,7 +199,8 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - transformers >=5.3.0,<6.0.0
+        # See https://github.com/huggingface/lerobot/pull/3249
+        - transformers ==5.3.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
