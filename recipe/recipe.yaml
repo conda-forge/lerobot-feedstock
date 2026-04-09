@@ -380,6 +380,19 @@ outputs:
           - echo "tested in lerobot-tests"
 
   - package:
+      name: lerobot-multi-task-dit
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
       name: lerobot-smolvla
     requirements:
       host:
