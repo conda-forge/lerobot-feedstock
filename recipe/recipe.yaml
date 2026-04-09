@@ -87,7 +87,7 @@ outputs:
         - imageio >=2.34.0,<3.0.0
         - imageio-ffmpeg
         - termcolor >=2.4.0,<4.0.0
-        - pytorch >=2.2.1,<2.11.0
+        - pytorch >=2.7,<2.11.0
         # torchvision and torchcodec are strictly bound in PyPI metadata
         # as they are ABI constrained but this is not reflected in their PyPI
         # metadata, but as in conda-forge this ABI constraint is reflected,
