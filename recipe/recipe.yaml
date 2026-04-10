@@ -1,5 +1,5 @@
 context:
-  version: "0.5.0"
+  version: "0.5.1"
   build_number: 0
   # This is overridden for consistency with upstream metadata
   python_min: "3.12"
@@ -12,25 +12,25 @@ recipe:
   version: ${{ version }}
 
 source:
-- url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: e7205d5ab8f2a4243f3f3015e8cc968112cd5e033c30a1a291a6ff8981cd3b77
-  patches:
-    - patch_pypi_deps_metadata.patch
-- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_128x128.png
-  sha256: 9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b
-  target_directory: tests/artifacts/cameras
-- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_160x120.png
-  sha256: 7e11af87616b83c1cdb30330e951b91e86b51c64a1326e1ba5b4a3fbcdec1a11
-  target_directory: tests/artifacts/cameras
-- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_320x180.png
-  sha256: b8840fb643afe903191248703b1f95a57faf5812ecd9978ac502ee939646fdb2
-  target_directory: tests/artifacts/cameras
-- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_480x270.png
-  sha256: f79d14daafb1c0cf2fec5d46ee8029a73fe357402fdd31a7cd4a4794d7319a7c
-  target_directory: tests/artifacts/cameras
-- url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/test_rs.bag
-  sha256: a8d6e64d6cb0e02c94ae125630ee758055bd2e695772c0463a30d63ddc6c5e17
-  target_directory: tests/artifacts/cameras
+  - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
+    sha256: 45f8276b0990472f4a4f62428a74a0fb1040aefda2a8798ab5aa9e1ee3ddba96
+    patches:
+      - patch_pypi_deps_metadata.patch
+  - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_128x128.png
+    sha256: 9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b
+    target_directory: tests/artifacts/cameras
+  - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_160x120.png
+    sha256: 7e11af87616b83c1cdb30330e951b91e86b51c64a1326e1ba5b4a3fbcdec1a11
+    target_directory: tests/artifacts/cameras
+  - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_320x180.png
+    sha256: b8840fb643afe903191248703b1f95a57faf5812ecd9978ac502ee939646fdb2
+    target_directory: tests/artifacts/cameras
+  - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_480x270.png
+    sha256: f79d14daafb1c0cf2fec5d46ee8029a73fe357402fdd31a7cd4a4794d7319a7c
+    target_directory: tests/artifacts/cameras
+  - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/test_rs.bag
+    sha256: a8d6e64d6cb0e02c94ae125630ee758055bd2e695772c0463a30d63ddc6c5e17
+    target_directory: tests/artifacts/cameras
 
 build:
   number: ${{ build_number }}
@@ -43,65 +43,65 @@ outputs:
       script: ${{ PYTHON }} -m pip install .
       python:
         entry_points:
-        - lerobot-calibrate = lerobot.scripts.lerobot_calibrate:main
-        - lerobot-find-cameras = lerobot.scripts.lerobot_find_cameras:main
-        - lerobot-find-port = lerobot.scripts.lerobot_find_port:main
-        - lerobot-record = lerobot.scripts.lerobot_record:main
-        - lerobot-replay = lerobot.scripts.lerobot_replay:main
-        - lerobot-setup-motors = lerobot.scripts.lerobot_setup_motors:main
-        - lerobot-teleoperate = lerobot.scripts.lerobot_teleoperate:main
-        - lerobot-eval = lerobot.scripts.lerobot_eval:main
-        - lerobot-train = lerobot.scripts.lerobot_train:main
-        - lerobot-train-tokenizer = lerobot.scripts.lerobot_train_tokenizer:main
-        - lerobot-dataset-viz = lerobot.scripts.lerobot_dataset_viz:main
-        - lerobot-info = lerobot.scripts.lerobot_info:main
-        - lerobot-find-joint-limits = lerobot.scripts.lerobot_find_joint_limits:main
-        - lerobot-imgtransform-viz = lerobot.scripts.lerobot_imgtransform_viz:main
-        - lerobot-edit-dataset = lerobot.scripts.lerobot_edit_dataset:main
-        - lerobot-setup-can = lerobot.scripts.lerobot_setup_can:main
-    
+          - lerobot-calibrate = lerobot.scripts.lerobot_calibrate:main
+          - lerobot-find-cameras = lerobot.scripts.lerobot_find_cameras:main
+          - lerobot-find-port = lerobot.scripts.lerobot_find_port:main
+          - lerobot-record = lerobot.scripts.lerobot_record:main
+          - lerobot-replay = lerobot.scripts.lerobot_replay:main
+          - lerobot-setup-motors = lerobot.scripts.lerobot_setup_motors:main
+          - lerobot-teleoperate = lerobot.scripts.lerobot_teleoperate:main
+          - lerobot-eval = lerobot.scripts.lerobot_eval:main
+          - lerobot-train = lerobot.scripts.lerobot_train:main
+          - lerobot-train-tokenizer = lerobot.scripts.lerobot_train_tokenizer:main
+          - lerobot-dataset-viz = lerobot.scripts.lerobot_dataset_viz:main
+          - lerobot-info = lerobot.scripts.lerobot_info:main
+          - lerobot-find-joint-limits = lerobot.scripts.lerobot_find_joint_limits:main
+          - lerobot-imgtransform-viz = lerobot.scripts.lerobot_imgtransform_viz:main
+          - lerobot-edit-dataset = lerobot.scripts.lerobot_edit_dataset:main
+          - lerobot-setup-can = lerobot.scripts.lerobot_setup_can:main
+
     requirements:
       host:
-      - python ${{ python_min }}.*
-      - setuptools
-      - pip
+        - python ${{ python_min }}.*
+        - setuptools
+        - pip
       run:
-      - python >=${{ python_min }}
-      - datasets >=4.0.0,<5.0.0
-      - diffusers >=0.27.2,<0.36.0
-      - huggingface_hub >=1.0.0,<2.0.0
-      - accelerate >=1.10.0,<2.0.0
-      - numpy >=2.0.0
-      - einops >=0.8.0,<0.9.0
-      - py-opencv >=4.9.0
-      - av >=15.0.0,<16.0.0
-      - jsonlines >=4.0.0,<5.0.0
-      - packaging >=24.2,<26.0
-      - pynput >=1.7.8,<1.9.0
-      - pyserial >=3.5,<4.0
-      - wandb >=0.24.0,<0.25.0
-      - draccus ==0.10.0
-      - gymnasium >=1.1.1,<2.0.0
-      - rerun-sdk >=0.24.0,<0.27.0
-      - deepdiff >=7.0.1,<9.0.0
-      - imageio >=2.34.0,<3.0.0
-      - imageio-ffmpeg
-      - termcolor >=2.4.0,<4.0.0
-      - pytorch >=2.2.1,<2.11.0
-      # torchvision and torchcodec are strictly bound in PyPI metadata
-      # as they are ABI constrained but this is not reflected in their PyPI
-      # metadata, but as in conda-forge this ABI constraint is reflected,
-      # we can relax the version constraints here 
-      - torchvision >=0.21.0
-      - torchcodec >=0.2.1
+        - python >=${{ python_min }}
+        - datasets >=4.0.0,<5.0.0
+        - diffusers >=0.27.2,<0.36.0
+        - huggingface_hub >=1.0.0,<2.0.0
+        - accelerate >=1.10.0,<2.0.0
+        - numpy >=2.0.0
+        - einops >=0.8.0,<0.9.0
+        - py-opencv >=4.9.0
+        - av >=15.0.0,<16.0.0
+        - jsonlines >=4.0.0,<5.0.0
+        - packaging >=24.2,<26.0
+        - pynput >=1.7.8,<1.9.0
+        - pyserial >=3.5,<4.0
+        - wandb >=0.24.0,<0.25.0
+        - draccus ==0.10.0
+        - gymnasium >=1.1.1,<2.0.0
+        - rerun-sdk >=0.24.0,<0.27.0
+        - deepdiff >=7.0.1,<9.0.0
+        - imageio >=2.34.0,<3.0.0
+        - imageio-ffmpeg
+        - termcolor >=2.4.0,<4.0.0
+        - pytorch >=2.7,<2.11.0
+        # torchvision and torchcodec are strictly bound in PyPI metadata
+        # as they are ABI constrained but this is not reflected in their PyPI
+        # metadata, but as in conda-forge this ABI constraint is reflected,
+        # we can relax the version constraints here
+        - torchvision >=0.22.0
+        - torchcodec >=0.3.0
 
-    
+
     tests:
-    - python:
-        imports:
-        - lerobot
-        pip_check: true
-        python_version: ${{ python_min }}.*
+      - python:
+          imports:
+            - lerobot
+          pip_check: true
+          python_version: ${{ python_min }}.*
 
   - package:
       name: lerobot-all
@@ -123,11 +123,11 @@ outputs:
         - ${{ pin_subpackage('lerobot-pusht', exact=True) }}
 
     tests:
-    - python:
-        imports:
-        - lerobot
-        pip_check: false
-        python_version: ${{ python_min }}.*
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
 
   # The tests files are non-neglibile in size, so we put them in a separate package
   - package:
@@ -159,9 +159,9 @@ outputs:
           # Ensure that pygame tests pass on unix,
           # see https://github.com/conda-forge/gymnasium-feedstock/pull/36#issuecomment-2124699477
           - if: unix
-            then: export SDL_VIDEODRIVER="dummy"
-          - if: unix
-            then: pytest -v ${{ representative_tests }}
+            then:
+              - export SDL_VIDEODRIVER="dummy"
+              - pytest -v ${{ representative_tests }}
           - if: win
             then: pytest -v ${{ representative_tests }}
 
@@ -199,7 +199,8 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - transformers >=5.3.0,<6.0.0
+        # See https://github.com/huggingface/lerobot/pull/3249
+        - transformers ==5.3.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -379,6 +380,19 @@ outputs:
           - echo "tested in lerobot-tests"
 
   - package:
+      name: lerobot-multi-task-dit
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
       name: lerobot-smolvla
     requirements:
       host:
@@ -420,7 +434,7 @@ outputs:
         - ${{ pin_subpackage('lerobot-matplotlib-dep', exact=True) }}
     tests:
       - script:
-         - echo "tested in lerobot-tests"
+          - echo "tested in lerobot-tests"
 
   - package:
       name: lerobot-aloha

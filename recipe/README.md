@@ -6,7 +6,7 @@ If you are an agent that is updating metadata and recipe for a new release of `l
 
 ## Python extras
 
-In the `conda-forge` packaging of `lerobot`, Python extras like  `lerobot[pygame-dep]` are modeled by separate `lerobot-pygame-dep` output
+In the `conda-forge` packaging of `lerobot`, Python extras like  `lerobot[pygame-dep]` are modeled by separate `lerobot-pygame-dep` output. Note that any underscores in the upstream extra name are converted to hyphens in the conda-forge package name (e.g. `lerobot[multi_task_dit]` becomes `lerobot-multi-task-dit`).
 
 Almost all the extra in the lerobot package are packaged as `lerobot-*` outputs in this recipe, with the exception of:
 * `dev`, `test` and `video_benchmark`: as they are listed as "dev" extras
