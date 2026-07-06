@@ -1,40 +1,55 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index c299199c..c49e8ea8 100644
+index c319c3f..8db5cd0 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
-@@ -66,17 +66,15 @@ dependencies = [
-     "accelerate>=1.10.0,<2.0.0",
- 
-     # Core dependencies
+@@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
+ dependencies = [
+     # Core ML
+     "torch>=2.7,<2.12.0",
+-    "torchvision>=0.22.0,<0.27.0",
 -    "numpy>=2.0.0,<2.3.0", # NOTE: Explicitly listing numpy helps the resolver converge faster. Upper bound imposed by opencv-python-headless.
--    "setuptools>=71.0.0,<81.0.0",
--    "cmake>=3.29.0.1,<4.2.0",
-+    "numpy>=2.0.0", # NOTE: Explicitly listing numpy helps the resolver converge faster. Upper bound imposed by opencv-python-headless.
-     "packaging>=24.2,<26.0",
- 
-     "torch>=2.7,<2.11.0",
--    "torchcodec>=0.3.0,<0.11.0; sys_platform != 'win32' and (sys_platform != 'linux' or (platform_machine != 'aarch64' and platform_machine != 'arm64' and platform_machine != 'armv7l')) and (sys_platform != 'darwin' or platform_machine != 'x86_64')", # NOTE: Windows support starts at version 0.7 (needs torch==2.8), ffmpeg>=8 support starts at version 0.8.1 (needs torch==2.9), system-wide ffmpeg support starts at version 0.10 (needs torch==2.10).
--    "torchvision>=0.22.0,<0.26.0",
-+    "torchcodec>=0.3.0; sys_platform != 'win32' and (sys_platform != 'linux' or (platform_machine != 'aarch64' and platform_machine != 'arm64' and platform_machine != 'armv7l')) and (sys_platform != 'darwin' or platform_machine != 'x86_64')", # NOTE: Windows support starts at version 0.7 (needs torch==2.8), ffmpeg>=8 support starts at version 0.8.1 (needs torch==2.9), system-wide ffmpeg support starts at version 0.10 (needs torch==2.10).
-+    "torchvision>=0.22.0",
- 
-     "einops>=0.8.0,<0.9.0",
 -    "opencv-python-headless>=4.9.0,<4.14.0",
++    "torchvision>=0.22.0",
++    "numpy>=2.0.0", # NOTE: Explicitly listing numpy helps the resolver converge faster. Upper bound imposed by opencv-python-headless.
 +    "opencv-python-headless>=4.9.0",
-     "av>=15.0.0,<16.0.0",
-     "jsonlines>=4.0.0,<5.0.0",
-     "pynput>=1.7.8,<1.9.0",
-@@ -98,7 +96,7 @@ dependencies = [
+     "Pillow>=10.0.0,<13.0.0",
+     "einops>=0.8.0,<0.9.0",
  
- # Common
- pygame-dep = ["pygame>=2.5.1,<2.7.0"]
--placo-dep = ["placo>=0.9.6,<0.9.17"]
-+placo-dep = ["placo>=0.9.6"]
- transformers-dep = ["transformers==5.3.0"] # TODO(Steven): https://github.com/huggingface/lerobot/pull/3249
- grpcio-dep = ["grpcio==1.73.1", "protobuf>=6.31.1,<6.32.0"]
- can-dep = ["python-can>=4.2.0,<5.0.0"]
-@@ -130,8 +128,8 @@ unitree_g1 = [
- reachy2 = ["reachy2_sdk>=1.0.15,<1.1.0"]
+@@ -85,9 +85,6 @@ dependencies = [
+     "termcolor>=2.4.0,<4.0.0",
+     "tqdm>=4.66.0,<5.0.0",
+ 
+-    # Build tools (required by opencv-python-headless on some platforms)
+-    "cmake>=3.29.0.1,<4.2.0",
+-    "setuptools>=71.0.0,<81.0.0",
+ ]
+ 
+ # Optional dependencies
+@@ -105,12 +102,7 @@ dataset = [
+     #   - win32 x86_64                     : wheels since 0.7.0  (needs torch>=2.8).
+     #   - linux aarch64/arm64              : wheels since 0.11.0 (needs torch>=2.11).
+     #   - macOS x86_64 (Intel) and linux armv7l: no wheels in any released version -> fall through to the PyAV decoder.
+-    # Each platform gets its own line so the resolver picks the minimum version that has a wheel for it.
+-
+-    # Other torch/torchcodec pairings (informational): 0.8.1 = ffmpeg>=8 support, 0.10 = system-wide ffmpeg support, 0.12 needs torch==2.12.
+-    "torchcodec>=0.3.0,<0.12.0; (sys_platform == 'linux' and (platform_machine == 'x86_64' or platform_machine == 'AMD64')) or (sys_platform == 'darwin' and platform_machine == 'arm64')",
+-    "torchcodec>=0.7.0,<0.12.0; sys_platform == 'win32'",
+-    "torchcodec>=0.11.0,<0.12.0; sys_platform == 'linux' and (platform_machine == 'aarch64' or platform_machine == 'arm64')",
++    "torchcodec>=0.3.0",
+     "jsonlines>=4.0.0,<5.0.0",
+ ]
+ training = [
+@@ -148,7 +140,7 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
+ # -> .so.11) ship newer sonames, so left unpinned the resolver grabs them and `import placo`
+ # fails at load with "liburdfdom_sensor.so.4.0: cannot open shared object file" (see #3755).
+ # There is no cmeel-urdfdom 5.x; <5 selects the 4.x ABI the placo/pin wheels are built against.
+-placo-dep = ["placo>=0.9.6,<0.9.16", "cmeel-urdfdom>=4,<5", "cmeel-tinyxml2<11"]
++placo-dep = ["placo>=0.9.6", "cmeel-urdfdom>=4,<5", "cmeel-tinyxml2<11"]
+ transformers-dep = ["transformers>=5.4.0,<5.6.0"]
+ grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
+ accelerate-dep = ["accelerate>=1.14.0,<2.0.0"]
+@@ -198,8 +190,8 @@ reachy2 = [
+ rebot = ["lerobot[motorbridge-dep]", "lerobot[motorbridge-smart-servo-dep]"]
  kinematics = ["lerobot[placo-dep]"]
  intelrealsense = [
 -    "pyrealsense2>=2.55.1.6486,<2.57.0 ; sys_platform != 'darwin'",
@@ -44,36 +59,49 @@ index c299199c..c49e8ea8 100644
  ]
  phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
  
-@@ -172,41 +170,24 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
+@@ -266,7 +258,7 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
  
  # Simulation
  # NOTE: Explicitly listing scipy helps flatten the dependecy tree.
--aloha = ["gym-aloha>=0.1.2,<0.2.0", "lerobot[scipy-dep]"]
-+aloha = ["gym-aloha>=0.1.2,<0.2.0"]
- pusht = ["gym-pusht>=0.1.5,<0.2.0", "pymunk>=6.6.0,<7.0.0"] # TODO: Fix pymunk version in gym-pusht instead
- libero = ["lerobot[transformers-dep]", "hf-libero>=0.1.3,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
- metaworld = ["metaworld==3.0.0", "lerobot[scipy-dep]"]
- 
- # All
- all = [
+-aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4,<0.2.0", "lerobot[scipy-dep]"]
++aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4,<0.2.0"]
+ pusht = ["lerobot[dataset]", "gym-pusht>=0.1.5,<0.2.0", "pymunk>=6.6.0,<7.0.0"] # TODO: Fix pymunk version in gym-pusht instead
+ libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
+ metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
+@@ -292,46 +284,27 @@ all = [
+     "lerobot[training]",
+     "lerobot[hardware]",
+     "lerobot[viz]",
 -    # NOTE(resolver hint): scipy is pulled in transitively via lerobot[scipy-dep] through
 -    # multiple extras (aloha, metaworld, pi, wallx, phone). Listing it explicitly
 -    # helps pip's resolver converge by constraining scipy early, before it encounters
 -    # the loose scipy requirements from transitive deps like dm-control and metaworld.
 -    "scipy>=1.14.0,<2.0.0",
      "lerobot[dynamixel]",
+-    "lerobot[feetech]",
+     "lerobot[damiao]",
+     "lerobot[robstride]",
      "lerobot[gamepad]",
 -    "lerobot[hopejr]",
 -    "lerobot[lekiwi]",
+     "lerobot[openarms]",
 -    "lerobot[reachy2]",
+     "lerobot[rebot]",
      "lerobot[kinematics]",
      "lerobot[intelrealsense]",
+     "lerobot[diffusion]",
+     "lerobot[multi_task_dit]",
 -    "lerobot[wallx]",
      "lerobot[pi]",
+     "lerobot[molmoact2]",
      "lerobot[smolvla]",
-     # "lerobot[groot]", TODO(Steven): Gr00t requires specific installation instructions for flash-attn
+     "lerobot[fastwam]",
+-    "lerobot[groot]",
      "lerobot[xvla]",
+     "lerobot[evo1]",
 -    "lerobot[hilserl]",
+     "lerobot[vla_jepa]",
+     "lerobot[lingbot_va]",
      "lerobot[async]",
 -    "lerobot[dev]",
 -    "lerobot[test]",
@@ -84,6 +112,6 @@ index c299199c..c49e8ea8 100644
 -    "lerobot[libero]; sys_platform == 'linux'",
 -    "lerobot[metaworld]",
 -    "lerobot[sarm]",
+     "lerobot[robometer]",
+     "lerobot[topreward]",
      "lerobot[peft]",
-     # "lerobot[unitree_g1]", TODO: Unitree requires specific installation instructions for unitree_sdk2
- ]
