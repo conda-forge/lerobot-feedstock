@@ -42,6 +42,8 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 * `torchvision` and `torchcodec` has complex upper bounds for `D5`. Upper bounds for `torchvision` and `torchcodec` are thus removed in `conda-forge` packaging. As `torchcodec` is available on all conda-forge platforms, all platform specific selectors are removed.
 * `py-opencv` in `pypi` has an upper bound due to `D4`, that is removed in `conda-forge` as we anyhow include `opencv` related tests in the test that we run as part of the `lerobot-tests`.
 * A `numpy` upper bound is present for simplifying solver life in `pypi` (`D1`), upper bound that is removed in `conda-forge`.
+* The `lerobot` package bundles all the CLI scripts declared in `[project.scripts]`, including the ones backed by the upstream `dataset`, `training`, `hardware` and `viz` extras (see the `core_scripts` extra), so their run dependencies (`datasets`, `av`, `jsonlines`, `wandb`, `accelerate`, `pynput`, `pyserial`, `deepdiff`, `rerun-sdk`) are pulled into the `lerobot` output directly rather than split into their own `lerobot-*-dep` outputs.
+* `foxglove-sdk`, part of the `viz` extra, is not available on conda-forge and is therefore omitted; `lerobot-dataset-viz`/`lerobot-imgtransform-viz` still work through `rerun-sdk`.
 
 ### `lerobot[intelrealsense]`
 
