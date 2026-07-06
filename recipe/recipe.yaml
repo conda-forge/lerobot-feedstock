@@ -101,6 +101,10 @@ outputs:
         - pyserial >=3.5,<4.0
         - deepdiff >=7.0.1,<9.0.0
         - rerun-sdk >=0.24.0,<0.34.0
+        # rerun-sdk bundles rerun-notebook, whose own (unconditional) PyPI metadata
+        # requires ipykernel<7.0.0; conda-forge's rerun-sdk package does not declare
+        # this, so pip_check fails without it listed explicitly here.
+        - ipykernel <7.0.0
         # foxglove-sdk (also part of upstream `viz`) is not packaged on conda-forge, so it is omitted
 
 
