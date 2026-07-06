@@ -69,33 +69,39 @@ outputs:
         - pip
       run:
         - python >=${{ python_min }}
-        - datasets >=4.0.0,<5.0.0
-        - diffusers >=0.27.2,<0.36.0
         - huggingface_hub >=1.0.0,<2.0.0
-        - accelerate >=1.10.0,<2.0.0
         - numpy >=2.0.0
         - einops >=0.8.0,<0.9.0
         - py-opencv >=4.9.0
-        - av >=15.0.0,<16.0.0
-        - jsonlines >=4.0.0,<5.0.0
+        - pillow >=10.0.0,<13.0.0
+        - requests >=2.32.0,<3.0.0
+        - safetensors >=0.4.3,<1.0.0
+        - tqdm >=4.66.0,<5.0.0
         - packaging >=24.2,<26.0
-        - pynput >=1.7.8,<1.9.0
-        - pyserial >=3.5,<4.0
-        - wandb >=0.24.0,<0.25.0
         - draccus ==0.10.0
         - gymnasium >=1.1.1,<2.0.0
-        - rerun-sdk >=0.24.0,<0.27.0
-        - deepdiff >=7.0.1,<9.0.0
-        - imageio >=2.34.0,<3.0.0
-        - imageio-ffmpeg
         - termcolor >=2.4.0,<4.0.0
-        - pytorch >=2.7,<2.11.0
+        - pytorch >=2.7,<2.12.0
         # torchvision and torchcodec are strictly bound in PyPI metadata
         # as they are ABI constrained but this is not reflected in their PyPI
         # metadata, but as in conda-forge this ABI constraint is reflected,
         # we can relax the version constraints here
         - torchvision >=0.22.0
         - torchcodec >=0.3.0
+        # The base package bundles the scripts backed by the `dataset`,
+        # `training`, `hardware` and `viz` upstream extras (see the
+        # `core_scripts` extra in pyproject.toml), so their dependencies
+        # are pulled in here as well
+        - datasets >=4.7.0,<5.0.0
+        - av >=15.0.0,<16.0.0
+        - jsonlines >=4.0.0,<5.0.0
+        - wandb >=0.24.0,<0.28.0
+        - accelerate >=1.14.0,<2.0.0
+        - pynput >=1.7.8,<1.9.0
+        - pyserial >=3.5,<4.0
+        - deepdiff >=7.0.1,<9.0.0
+        - rerun-sdk >=0.24.0,<0.34.0
+        # foxglove-sdk (also part of upstream `viz`) is not packaged on conda-forge, so it is omitted
 
 
     tests:
