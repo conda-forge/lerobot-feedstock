@@ -21,7 +21,7 @@ Almost all the extra in the lerobot package are packaged as `lerobot-*` outputs 
 * `phone`: as `teleop` and `hebi-py` are not in conda-forge
 * `hilserl`: as it requires `gym-hil` that is not in conda-forge
 * `rebot`: as `motorbridge` and `motorbridge-smart-servo` are not available on conda-forge
-* `dataset`, `training`, `hardware`, `viz`, `core_scripts`, `evaluation` and `dataset_viz`: these upstream feature-scoped/composite extras back the CLI scripts exposed as entry points on the base `lerobot` output (e.g. `lerobot-record`, `lerobot-train`, `lerobot-dataset-viz`), but their run dependencies are not packaged as a dedicated output; install the underlying deps manually if you need those scripts
+* `core_scripts`, `evaluation` and `dataset_viz`: these are just aliases combining `dataset`/`hardware`/`viz` (all packaged individually as `lerobot-dataset`/`lerobot-hardware`/`lerobot-viz`), so they are not packaged as their own output; install the underlying `lerobot-*` outputs you need instead
 * `unitree_g1`, `wallx`, `sarm`, `robometer`, `eo1`, `vla_jepa`, `diffusion`, `molmoact2`, `topreward`, `fastwam`, `evo1`, `lingbot_va` and `annotations`: new extras introduced upstream that are not yet packaged here; their dependencies (including `qwen-vl-utils`, now available on conda-forge) are otherwise packageable, this is just pending work
 
 ## Dependencies metadata changes
@@ -41,7 +41,7 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 * `torchvision` and `torchcodec` has complex upper bounds for `D5`. Upper bounds for `torchvision` and `torchcodec` are thus removed in `conda-forge` packaging. As `torchcodec` is available on all conda-forge platforms, all platform specific selectors are removed.
 * `py-opencv` in `pypi` has an upper bound due to `D4`, that is removed in `conda-forge` as we anyhow include `opencv` related tests in the test that we run as part of the `lerobot-tests`.
 * A `numpy` upper bound is present for simplifying solver life in `pypi` (`D1`), upper bound that is removed in `conda-forge`.
-* The `lerobot` output only carries the true unconditional `dependencies` from `pyproject.toml`. The CLI scripts backed by the `dataset`, `training`, `hardware` and `viz` extras (e.g. `lerobot-record`, `lerobot-train`, `lerobot-dataset-viz`) are still exposed as entry points on the base package, but their extra run dependencies are not force-installed; users who need those scripts install the relevant extra dependencies themselves.
+* The `lerobot` output only carries the true unconditional `dependencies` from `pyproject.toml`. The CLI scripts backed by the `dataset`, `training`, `hardware` and `viz` extras (e.g. `lerobot-record`, `lerobot-train`, `lerobot-dataset-viz`) are still exposed as entry points on the base package, but their extra run dependencies are not force-installed; they are packaged separately as `lerobot-dataset`, `lerobot-training`, `lerobot-hardware` and `lerobot-viz`, which users who need those scripts should install alongside `lerobot`.
 
 ### `lerobot[intelrealsense]`
 
@@ -51,6 +51,11 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 * `pypi` has an upperbound for `placo` due to `D1`, `D4` and `D5`, that is not required in `conda-forge`, so the upper bound is removed.
 * `pypi` also pins `cmeel-urdfdom` and `cmeel-tinyxml2` to work around an ABI mismatch (`D2`); neither is available as a conda-forge pypi-mapped package, and on conda-forge the corresponding native libraries are pulled in as regular dependencies of the `placo` conda package, so both are removed.
+
+### `lerobot[viz]`
+
+* `pypi` requires `foxglove-sdk`, which is not available on conda-forge, so it is removed; `lerobot-viz` only carries `rerun-sdk`.
+* `rerun-sdk` bundles `rerun-notebook`, whose own (unconditional) PyPI metadata requires `ipykernel<7.0.0` (`D2`); conda-forge's `rerun-sdk` package does not declare this, so `ipykernel<7.0.0` is added explicitly to `lerobot-viz`.
 
 ### `lerobot[aloha]`
 
