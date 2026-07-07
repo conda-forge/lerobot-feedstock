@@ -9,9 +9,8 @@ If you are an agent that is updating metadata and recipe for a new release of `l
 In the `conda-forge` packaging of `lerobot`, Python extras like  `lerobot[pygame-dep]` are modeled by separate `lerobot-pygame-dep` output. Note that any underscores in the upstream extra name are converted to hyphens in the conda-forge package name (e.g. `lerobot[multi_task_dit]` becomes `lerobot-multi-task-dit`).
 
 Almost all the extra in the lerobot package are packaged as `lerobot-*` outputs in this recipe, with the exception of:
-* `dev`, `test` and `video_benchmark`: as they are listed as "dev" extras
-* `reachy`: as `reachy2-sdk` is not available on conda-forge
-* `unitree_g1`: as `unitree-sdk2` is not available on conda-forge
+* `dev`, `test`, `video_benchmark` and `notebook`: as they are listed as "dev" extras
+* `reachy2`: as `reachy2-sdk` is not available on conda-forge
 * `feetech`: as direct dependency `feetech-servo-sdk` is not available on conda-forge
 * `hopejr`: as indirect dependency `feetech-servo-sdk` is not available on conda-forge
 * `lekiwi`: as indirect dependency `feetech-servo-sdk` is not available on conda-forge
@@ -19,11 +18,11 @@ Almost all the extra in the lerobot package are packaged as `lerobot-*` outputs 
 * `metaworld`: as the `metaworld` dependency is not available on conda-forge
 * `groot`: as it is not clear which `flash-attn` and `decord` dependencies 
          are actually there, and it is not included in `lerobot[all]`
-* `phone`: as `telop` and `hebi-py` are not in conda-forge
-* `wallx`: as it requires `qwen-vl-utils` that is not in conda-forge
-* `sarm`: as it requires `qwen-vl-utils` that is not in conda-forge
+* `phone`: as `teleop` and `hebi-py` are not in conda-forge
 * `hilserl`: as it requires `gym-hil` that is not in conda-forge
-* `qwen-vl-utils-dep`: as `qwen-vl-utils` is not in conda-forge
+* `rebot`: as `motorbridge` and `motorbridge-smart-servo` are not available on conda-forge
+* `dataset`, `training`, `hardware`, `viz`, `core_scripts`, `evaluation` and `dataset_viz`: these upstream feature-scoped/composite extras back the CLI scripts exposed as entry points on the base `lerobot` output (e.g. `lerobot-record`, `lerobot-train`, `lerobot-dataset-viz`), but their run dependencies are not packaged as a dedicated output; install the underlying deps manually if you need those scripts
+* `unitree_g1`, `wallx`, `sarm`, `robometer`, `eo1`, `vla_jepa`, `diffusion`, `molmoact2`, `topreward`, `fastwam`, `evo1`, `lingbot_va` and `annotations`: new extras introduced upstream that are not yet packaged here; their dependencies (including `qwen-vl-utils`, now available on conda-forge) are otherwise packageable, this is just pending work
 
 ## Dependencies metadata changes
 
@@ -42,8 +41,7 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 * `torchvision` and `torchcodec` has complex upper bounds for `D5`. Upper bounds for `torchvision` and `torchcodec` are thus removed in `conda-forge` packaging. As `torchcodec` is available on all conda-forge platforms, all platform specific selectors are removed.
 * `py-opencv` in `pypi` has an upper bound due to `D4`, that is removed in `conda-forge` as we anyhow include `opencv` related tests in the test that we run as part of the `lerobot-tests`.
 * A `numpy` upper bound is present for simplifying solver life in `pypi` (`D1`), upper bound that is removed in `conda-forge`.
-* The `lerobot` package bundles all the CLI scripts declared in `[project.scripts]`, including the ones backed by the upstream `dataset`, `training`, `hardware` and `viz` extras (see the `core_scripts` extra), so their run dependencies (`datasets`, `av`, `jsonlines`, `wandb`, `accelerate`, `pynput`, `pyserial`, `deepdiff`, `rerun-sdk`) are pulled into the `lerobot` output directly rather than split into their own `lerobot-*-dep` outputs.
-* `foxglove-sdk`, part of the `viz` extra, is not available on conda-forge and is therefore omitted; `lerobot-dataset-viz`/`lerobot-imgtransform-viz` still work through `rerun-sdk`.
+* The `lerobot` output only carries the true unconditional `dependencies` from `pyproject.toml`. The CLI scripts backed by the `dataset`, `training`, `hardware` and `viz` extras (e.g. `lerobot-record`, `lerobot-train`, `lerobot-dataset-viz`) are still exposed as entry points on the base package, but their extra run dependencies are not force-installed; users who need those scripts install the relevant extra dependencies themselves.
 
 ### `lerobot[intelrealsense]`
 
