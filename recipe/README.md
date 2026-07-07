@@ -50,6 +50,7 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 ### `lerobot[placo-dep]`
 
 * `pypi` has an upperbound for `placo` due to `D1`, `D4` and `D5`, that is not required in `conda-forge`, so the upper bound is removed.
+* `pypi` also pins `cmeel-urdfdom` and `cmeel-tinyxml2` to work around an ABI mismatch (`D2`); neither is available as a conda-forge pypi-mapped package, and on conda-forge the corresponding native libraries are pulled in as regular dependencies of the `placo` conda package, so both are removed.
 
 ### `lerobot[aloha]`
 
