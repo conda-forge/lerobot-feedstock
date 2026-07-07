@@ -1,6 +1,6 @@
 context:
   version: "0.6.0"
-  build_number: 2
+  build_number: 1
   # This is overridden for consistency with upstream metadata
   python_min: "3.12"
   # These are a subset of the tests that are representative of the different submodules of lerobot

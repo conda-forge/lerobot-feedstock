@@ -1,5 +1,5 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index c319c3f..8db5cd0 100644
+index c319c3f..423d00d 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
@@ -68,10 +68,15 @@ index c319c3f..8db5cd0 100644
  pusht = ["lerobot[dataset]", "gym-pusht>=0.1.5,<0.2.0", "pymunk>=6.6.0,<7.0.0"] # TODO: Fix pymunk version in gym-pusht instead
  libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
  metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
-@@ -292,46 +284,27 @@ all = [
-     "lerobot[training]",
-     "lerobot[hardware]",
-     "lerobot[viz]",
+@@ -287,55 +279,21 @@ metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
+ 
+ # All
+ all = [
+-    # Feature-scoped extras
+-    "lerobot[dataset]",
+-    "lerobot[training]",
+-    "lerobot[hardware]",
+-    "lerobot[viz]",
 -    # NOTE(resolver hint): scipy is pulled in transitively via lerobot[scipy-dep] through
 -    # multiple extras (aloha, metaworld, pi, wallx, phone). Listing it explicitly
 -    # helps pip's resolver converge by constraining scipy early, before it encounters
@@ -86,22 +91,22 @@ index c319c3f..8db5cd0 100644
 -    "lerobot[lekiwi]",
      "lerobot[openarms]",
 -    "lerobot[reachy2]",
-     "lerobot[rebot]",
+-    "lerobot[rebot]",
      "lerobot[kinematics]",
      "lerobot[intelrealsense]",
-     "lerobot[diffusion]",
+-    "lerobot[diffusion]",
      "lerobot[multi_task_dit]",
 -    "lerobot[wallx]",
      "lerobot[pi]",
-     "lerobot[molmoact2]",
+-    "lerobot[molmoact2]",
      "lerobot[smolvla]",
-     "lerobot[fastwam]",
+-    "lerobot[fastwam]",
 -    "lerobot[groot]",
      "lerobot[xvla]",
-     "lerobot[evo1]",
+-    "lerobot[evo1]",
 -    "lerobot[hilserl]",
-     "lerobot[vla_jepa]",
-     "lerobot[lingbot_va]",
+-    "lerobot[vla_jepa]",
+-    "lerobot[lingbot_va]",
      "lerobot[async]",
 -    "lerobot[dev]",
 -    "lerobot[test]",
@@ -112,6 +117,10 @@ index c319c3f..8db5cd0 100644
 -    "lerobot[libero]; sys_platform == 'linux'",
 -    "lerobot[metaworld]",
 -    "lerobot[sarm]",
-     "lerobot[robometer]",
-     "lerobot[topreward]",
+-    "lerobot[robometer]",
+-    "lerobot[topreward]",
      "lerobot[peft]",
+-    # "lerobot[unitree_g1]", TODO: Unitree requires specific installation instructions for unitree_sdk2
+ ]
+ 
+ [project.scripts]
