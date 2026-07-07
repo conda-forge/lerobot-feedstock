@@ -191,8 +191,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        # See https://github.com/huggingface/lerobot/pull/3249
-        - transformers ==5.3.0
+        - transformers >=5.4.0,<5.6.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -205,8 +204,8 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - grpcio 1.73.1.*
-        - protobuf >=6.31.1,<6.32.0
+        - grpcio >=1.73.1,<2.0.0
+        - protobuf >=6.31.1,<8.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -394,8 +393,7 @@ outputs:
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
         - num2words >=0.5.14,<0.6.0
-        - accelerate >=1.7.0,<2.0.0
-        - safetensors >=0.4.3,<1.0.0
+        - accelerate >=1.14.0,<2.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -436,7 +434,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - gym-aloha >=0.1.2,<0.2.0
+        - gym-aloha >=0.1.4,<0.2.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
