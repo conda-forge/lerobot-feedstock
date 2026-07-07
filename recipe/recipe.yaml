@@ -102,6 +102,10 @@ outputs:
         - python ${{ python_min }}.*
       run:
         - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - ${{ pin_subpackage('lerobot-training', exact=True) }}
+        - ${{ pin_subpackage('lerobot-hardware', exact=True) }}
+        - ${{ pin_subpackage('lerobot-viz', exact=True) }}
         - ${{ pin_subpackage('lerobot-dynamixel', exact=True) }}
         - ${{ pin_subpackage('lerobot-damiao', exact=True) }}
         - ${{ pin_subpackage('lerobot-robstride', exact=True) }}
@@ -263,6 +267,75 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - python-can >=4.2.0,<5.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-dataset
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - datasets >=4.7.0,<5.0.0
+        - pandas >=2.0.0,<3.0.0
+        - pyarrow >=21.0.0,<30.0.0
+        - av >=15.0.0,<16.0.0
+        # torchcodec is strictly bound per-platform in PyPI metadata based on
+        # wheel availability, but conda-forge builds torchcodec for all
+        # platforms, so a single unconstrained lower bound is enough here
+        - torchcodec >=0.3.0
+        - jsonlines >=4.0.0,<5.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-training
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - wandb >=0.24.0,<0.28.0
+        - accelerate >=1.14.0,<2.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-hardware
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - pynput >=1.7.8,<1.9.0
+        - pyserial >=3.5,<4.0
+        - deepdiff >=7.0.1,<9.0.0
+    tests:
+      - script:
+          - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-viz
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - rerun-sdk >=0.24.0,<0.34.0
+        # rerun-sdk bundles rerun-notebook, whose own (unconditional) PyPI metadata
+        # requires ipykernel<7.0.0; conda-forge's rerun-sdk package does not declare
+        # this, so pip_check fails without it listed explicitly here.
+        - ipykernel <7.0.0
+        # foxglove-sdk is also part of upstream `viz` but is not packaged on conda-forge, so it is omitted
     tests:
       - script:
           - echo "tested in lerobot-tests"
