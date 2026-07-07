@@ -1,6 +1,6 @@
 context:
   version: "0.6.0"
-  build_number: 1
+  build_number: 2
   # This is overridden for consistency with upstream metadata
   python_min: "3.12"
   # These are a subset of the tests that are representative of the different submodules of lerobot
@@ -103,9 +103,13 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot-dynamixel', exact=True) }}
+        - ${{ pin_subpackage('lerobot-damiao', exact=True) }}
+        - ${{ pin_subpackage('lerobot-robstride', exact=True) }}
         - ${{ pin_subpackage('lerobot-gamepad', exact=True) }}
+        - ${{ pin_subpackage('lerobot-openarms', exact=True) }}
         - ${{ pin_subpackage('lerobot-kinematics', exact=True) }}
         - ${{ pin_subpackage('lerobot-intelrealsense', exact=True) }}
+        - ${{ pin_subpackage('lerobot-multi-task-dit', exact=True) }}
         - ${{ pin_subpackage('lerobot-pi', exact=True) }}
         - ${{ pin_subpackage('lerobot-smolvla', exact=True) }}
         - ${{ pin_subpackage('lerobot-xvla', exact=True) }}
