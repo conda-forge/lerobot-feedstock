@@ -1,5 +1,5 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index c319c3f..8db5cd0 100644
+index c319c3f..9a65897 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
@@ -39,16 +39,24 @@ index c319c3f..8db5cd0 100644
      "jsonlines>=4.0.0,<5.0.0",
  ]
  training = [
-@@ -148,7 +140,7 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
+@@ -125,7 +117,6 @@ hardware = [
+ ]
+ viz = [
+     "rerun-sdk>=0.24.0,<0.34.0",
+-    "foxglove-sdk>=0.25.1,<0.26.0",
+ ]
+ # ── User-facing composite extras (map to CLI scripts) ─────
+ # lerobot-record, lerobot-replay, lerobot-calibrate, lerobot-teleoperate, etc.
+@@ -148,7 +139,7 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
  # -> .so.11) ship newer sonames, so left unpinned the resolver grabs them and `import placo`
  # fails at load with "liburdfdom_sensor.so.4.0: cannot open shared object file" (see #3755).
  # There is no cmeel-urdfdom 5.x; <5 selects the 4.x ABI the placo/pin wheels are built against.
 -placo-dep = ["placo>=0.9.6,<0.9.16", "cmeel-urdfdom>=4,<5", "cmeel-tinyxml2<11"]
-+placo-dep = ["placo>=0.9.6", "cmeel-urdfdom>=4,<5", "cmeel-tinyxml2<11"]
++placo-dep = ["placo>=0.9.6"]
  transformers-dep = ["transformers>=5.4.0,<5.6.0"]
  grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
  accelerate-dep = ["accelerate>=1.14.0,<2.0.0"]
-@@ -198,8 +190,8 @@ reachy2 = [
+@@ -198,8 +189,8 @@ reachy2 = [
  rebot = ["lerobot[motorbridge-dep]", "lerobot[motorbridge-smart-servo-dep]"]
  kinematics = ["lerobot[placo-dep]"]
  intelrealsense = [
@@ -59,7 +67,7 @@ index c319c3f..8db5cd0 100644
  ]
  phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
  
-@@ -266,7 +258,7 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
+@@ -266,7 +257,7 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
  
  # Simulation
  # NOTE: Explicitly listing scipy helps flatten the dependecy tree.
@@ -68,7 +76,12 @@ index c319c3f..8db5cd0 100644
  pusht = ["lerobot[dataset]", "gym-pusht>=0.1.5,<0.2.0", "pymunk>=6.6.0,<7.0.0"] # TODO: Fix pymunk version in gym-pusht instead
  libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
  metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
-@@ -292,46 +284,27 @@ all = [
+@@ -287,55 +278,25 @@ metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
+ 
+ # All
+ all = [
+-    # Feature-scoped extras
+     "lerobot[dataset]",
      "lerobot[training]",
      "lerobot[hardware]",
      "lerobot[viz]",
@@ -86,22 +99,22 @@ index c319c3f..8db5cd0 100644
 -    "lerobot[lekiwi]",
      "lerobot[openarms]",
 -    "lerobot[reachy2]",
-     "lerobot[rebot]",
+-    "lerobot[rebot]",
      "lerobot[kinematics]",
      "lerobot[intelrealsense]",
-     "lerobot[diffusion]",
+-    "lerobot[diffusion]",
      "lerobot[multi_task_dit]",
 -    "lerobot[wallx]",
      "lerobot[pi]",
-     "lerobot[molmoact2]",
+-    "lerobot[molmoact2]",
      "lerobot[smolvla]",
-     "lerobot[fastwam]",
+-    "lerobot[fastwam]",
 -    "lerobot[groot]",
      "lerobot[xvla]",
-     "lerobot[evo1]",
+-    "lerobot[evo1]",
 -    "lerobot[hilserl]",
-     "lerobot[vla_jepa]",
-     "lerobot[lingbot_va]",
+-    "lerobot[vla_jepa]",
+-    "lerobot[lingbot_va]",
      "lerobot[async]",
 -    "lerobot[dev]",
 -    "lerobot[test]",
@@ -112,6 +125,10 @@ index c319c3f..8db5cd0 100644
 -    "lerobot[libero]; sys_platform == 'linux'",
 -    "lerobot[metaworld]",
 -    "lerobot[sarm]",
-     "lerobot[robometer]",
-     "lerobot[topreward]",
+-    "lerobot[robometer]",
+-    "lerobot[topreward]",
      "lerobot[peft]",
+-    # "lerobot[unitree_g1]", TODO: Unitree requires specific installation instructions for unitree_sdk2
+ ]
+ 
+ [project.scripts]
