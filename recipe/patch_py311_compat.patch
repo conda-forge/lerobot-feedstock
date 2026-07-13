@@ -1,0 +1,163 @@
+diff --git a/src/lerobot/datasets/streaming_dataset.py b/src/lerobot/datasets/streaming_dataset.py
+index 14d4a52..fa3ffce 100644
+--- a/src/lerobot/datasets/streaming_dataset.py
++++ b/src/lerobot/datasets/streaming_dataset.py
+@@ -16,6 +16,7 @@
+ from collections import deque
+ from collections.abc import Callable, Generator, Iterable, Iterator
+ from pathlib import Path
++from typing import Generic, TypeVar
+ 
+ import datasets
+ import numpy as np
+@@ -58,7 +59,10 @@ class LookAheadError(Exception):
+     pass
+ 
+ 
+-class Backtrackable[T]:
++_T = TypeVar("_T")
++
++
++class Backtrackable(Generic[_T]):
+     """
+     Wrap any iterator/iterable so you can step back up to `history` items
+     and look ahead up to `lookahead` items.
+@@ -92,23 +96,23 @@ class Backtrackable[T]:
+ 
+     __slots__ = ("_source", "_back_buf", "_ahead_buf", "_cursor", "_history", "_lookahead")
+ 
+-    def __init__(self, iterable: Iterable[T], *, history: int = 1, lookahead: int = 0):
++    def __init__(self, iterable: Iterable[_T], *, history: int = 1, lookahead: int = 0):
+         if history < 1:
+             raise ValueError("history must be >= 1")
+         if lookahead <= 0:
+             raise ValueError("lookahead must be > 0")
+ 
+-        self._source: Iterator[T] = iter(iterable)
+-        self._back_buf: deque[T] = deque(maxlen=history)
+-        self._ahead_buf: deque[T] = deque(maxlen=lookahead) if lookahead > 0 else deque()
++        self._source: Iterator[_T] = iter(iterable)
++        self._back_buf: deque[_T] = deque(maxlen=history)
++        self._ahead_buf: deque[_T] = deque(maxlen=lookahead) if lookahead > 0 else deque()
+         self._cursor: int = 0
+         self._history = history
+         self._lookahead = lookahead
+ 
+-    def __iter__(self) -> "Backtrackable[T]":
++    def __iter__(self) -> "Backtrackable[_T]":
+         return self
+ 
+-    def __next__(self) -> T:
++    def __next__(self) -> _T:
+         # If we've stepped back, consume from back buffer first
+         if self._cursor < 0:  # -1 means "last item", etc.
+             self._cursor += 1
+@@ -122,7 +126,7 @@ class Backtrackable[T]:
+         self._cursor = 0
+         return item
+ 
+-    def prev(self) -> T:
++    def prev(self) -> _T:
+         """
+         Step one item back in history and return it.
+         Raises IndexError if already at the oldest buffered item.
+@@ -133,7 +137,7 @@ class Backtrackable[T]:
+         self._cursor -= 1
+         return self._back_buf[self._cursor]
+ 
+-    def peek_back(self, n: int = 1) -> T:
++    def peek_back(self, n: int = 1) -> _T:
+         """
+         Look `n` items back (n=1 == previous item) without moving the cursor.
+         """
+@@ -142,7 +146,7 @@ class Backtrackable[T]:
+ 
+         return self._back_buf[self._cursor - (n + 1)]
+ 
+-    def peek_ahead(self, n: int = 1) -> T:
++    def peek_ahead(self, n: int = 1) -> _T:
+         """
+         Look `n` items ahead (n=1 == next item) without moving the cursor.
+         Fills the ahead buffer if necessary.
+@@ -163,7 +167,7 @@ class Backtrackable[T]:
+ 
+         return self._ahead_buf[n - 1]
+ 
+-    def history(self) -> list[T]:
++    def history(self) -> list[_T]:
+         """
+         Return a copy of the buffered history (most recent last).
+         The list length ≤ `history` argument passed at construction.
+diff --git a/src/lerobot/motors/motors_bus.py b/src/lerobot/motors/motors_bus.py
+index 4688eaa..8bfa55c 100644
+--- a/src/lerobot/motors/motors_bus.py
++++ b/src/lerobot/motors/motors_bus.py
+@@ -29,7 +29,7 @@ from dataclasses import dataclass
+ from enum import Enum
+ from functools import cached_property
+ from pprint import pformat
+-from typing import TYPE_CHECKING, Protocol
++from typing import TYPE_CHECKING, Protocol, TypeAlias
+ 
+ from tqdm import tqdm
+ 
+@@ -48,8 +48,8 @@ else:
+ from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
+ from lerobot.utils.utils import enter_pressed, move_cursor_up
+ 
+-type NameOrID = str | int
+-type Value = int | float
++NameOrID: TypeAlias = str | int
++Value: TypeAlias = int | float
+ 
+ logger = logging.getLogger(__name__)
+ 
+diff --git a/src/lerobot/processor/pipeline.py b/src/lerobot/processor/pipeline.py
+index b9b9c6c..4fb65a2 100644
+--- a/src/lerobot/processor/pipeline.py
++++ b/src/lerobot/processor/pipeline.py
+@@ -38,7 +38,7 @@ from collections.abc import Callable, Iterable, Sequence
+ from copy import deepcopy
+ from dataclasses import dataclass, field
+ from pathlib import Path
+-from typing import Any, TypedDict, TypeVar, cast
++from typing import Any, Generic, TypedDict, TypeVar, cast
+ 
+ import torch
+ from huggingface_hub import hf_hub_download
+@@ -251,7 +251,7 @@ class ProcessorMigrationError(Exception):
+ 
+ 
+ @dataclass
+-class DataProcessorPipeline[TInput, TOutput](HubMixin):
++class DataProcessorPipeline(HubMixin, Generic[TInput, TOutput]):
+     """A sequential pipeline for processing data, integrated with the Hugging Face Hub.
+ 
+     This class chains together multiple `ProcessorStep` instances to form a complete
+diff --git a/src/lerobot/utils/io_utils.py b/src/lerobot/utils/io_utils.py
+index e037b41..4076464 100644
+--- a/src/lerobot/utils/io_utils.py
++++ b/src/lerobot/utils/io_utils.py
+@@ -16,11 +16,12 @@
+ import json
+ import logging
+ from pathlib import Path
+-from typing import Any
++from typing import Any, TypeVar
+ 
+ logger = logging.getLogger(__name__)
+ 
+ JsonLike = str | int | float | bool | None | list["JsonLike"] | dict[str, "JsonLike"] | tuple["JsonLike", ...]
++T = TypeVar("T", bound=JsonLike)
+ 
+ 
+ def load_json(fpath: Path) -> Any:
+@@ -90,7 +91,7 @@ def write_video(video_path: str | Path, stacked_frames: list, fps: int) -> None:
+             container.mux(packet)
+ 
+ 
+-def deserialize_json_into_object[T: JsonLike](fpath: Path, obj: T) -> T:
++def deserialize_json_into_object(fpath: Path, obj: T) -> T:
+     """
+     Loads the JSON data from `fpath` and recursively fills `obj` with the
+     corresponding values (strictly matching structure and types).
