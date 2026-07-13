@@ -1,8 +1,10 @@
 context:
   version: "0.6.0"
   build_number: 1
-  # This is overridden for consistency with upstream metadata
-  python_min: "3.12"
+  # Upstream requires-python is ">=3.12" only because of PEP 695 syntax (`type X = ...`,
+  # `def f[T](...)`, `class C[T]:`) in a few modules; patch_py311_compat.patch rewrites
+  # those to pre-3.12-compatible equivalents so we can support down to 3.11.
+  python_min: "3.11"
   # These are a subset of the tests that are representative of the different submodules of lerobot
   # and that are not too heavy to run in package creation phase
   representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/utils/test_io_utils.py tests/utils/test_encoding_utils.py tests/optim/test_schedulers.py
@@ -16,6 +18,7 @@ source:
     sha256: a4451766b7b450c7067a7e45671117511212a51c693b05aa711df2e101e4f7fd
     patches:
       - patch_pypi_deps_metadata.patch
+      - patch_py311_compat.patch
   - url: https://media.githubusercontent.com/media/huggingface/lerobot/v${{ version }}/tests/artifacts/cameras/image_128x128.png
     sha256: 9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b
     target_directory: tests/artifacts/cameras
@@ -70,7 +73,10 @@ outputs:
       run:
         - python >=${{ python_min }}
         - huggingface_hub >=1.0.0,<2.0.0
-        - numpy >=2.0.0
+        # Lower bound relaxed from upstream's >=2.0.0 for IsaacSim 5.1 compat,
+        # whose isaacsim-kernel package pins numpy==1.26.0; no numpy 2.0-only
+        # API is used by lerobot itself.
+        - numpy >=1.26.0
         - einops >=0.8.0,<0.9.0
         - py-opencv >=4.9.0
         - pillow >=10.0.0,<13.0.0
