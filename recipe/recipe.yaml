@@ -1,6 +1,6 @@
 context:
   version: "0.6.0"
-  build_number: 1
+  build_number: 2
   # Upstream requires-python is ">=3.12" only because of PEP 695 syntax (`type X = ...`,
   # `def f[T](...)`, `class C[T]:`) in a few modules; patch_py311_compat.patch rewrites
   # those to pre-3.12-compatible equivalents so we can support down to 3.11.
