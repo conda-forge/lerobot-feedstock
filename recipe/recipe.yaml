@@ -1,6 +1,6 @@
 context:
-  version: "0.6.0"
-  build_number: 2
+  version: "0.6.1"
+  build_number: 0
   # Upstream requires-python is ">=3.12" only because of PEP 695 syntax (`type X = ...`,
   # `def f[T](...)`, `class C[T]:`) in a few modules; patch_py311_compat.patch rewrites
   # those to pre-3.12-compatible equivalents so we can support down to 3.11.
@@ -15,7 +15,7 @@ recipe:
 
 source:
   - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: a4451766b7b450c7067a7e45671117511212a51c693b05aa711df2e101e4f7fd
+    sha256: 8a890cfd16560c0aeaf440122460c664dc1a8e9a7218b796e5c4c69ae23752a1
     patches:
       - patch_pypi_deps_metadata.patch
       - patch_py311_compat.patch
@@ -84,7 +84,7 @@ outputs:
         - safetensors >=0.4.3,<1.0.0
         - tqdm >=4.66.0,<5.0.0
         - packaging >=24.2,<26.0
-        - draccus ==0.10.0
+        - draccus ==0.11.6
         - gymnasium >=1.1.1,<2.0.0
         - termcolor >=2.4.0,<4.0.0
         - pytorch >=2.7,<2.12.0
