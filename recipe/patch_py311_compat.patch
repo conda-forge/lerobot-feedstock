@@ -1,28 +1,41 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index f5e9d83f..10dd6de4 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -29,7 +29,7 @@ version = "0.6.1"
+ description = "🤗 LeRobot: State-of-the-art Machine Learning for Real-World Robotics in Pytorch"
+ dynamic = ["readme"]
+ license = { text = "Apache-2.0" }
+-requires-python = ">=3.12"
++requires-python = ">=3.11"
+ authors = [
+     { name = "Rémi Cadène", email = "re.cadene@gmail.com" },
+     { name = "Simon Alibert", email = "alibert.sim@gmail.com" },
 diff --git a/src/lerobot/datasets/streaming_dataset.py b/src/lerobot/datasets/streaming_dataset.py
-index 14d4a52..fa3ffce 100644
+index d6cc2419..5fb902a1 100644
 --- a/src/lerobot/datasets/streaming_dataset.py
 +++ b/src/lerobot/datasets/streaming_dataset.py
-@@ -16,6 +16,7 @@
+@@ -16,7 +16,7 @@
  from collections import deque
  from collections.abc import Callable, Generator, Iterable, Iterator
  from pathlib import Path
-+from typing import Generic, TypeVar
+-from typing import Literal
++from typing import Generic, Literal, TypeVar
  
  import datasets
  import numpy as np
-@@ -58,7 +59,10 @@ class LookAheadError(Exception):
-     pass
+@@ -62,8 +62,9 @@ class LookAheadError(Exception):
+ class _ShardExhaustedError(Exception):
+     """Raised when a streaming dataset shard has no more items."""
  
++_T = TypeVar("_T")
  
 -class Backtrackable[T]:
-+_T = TypeVar("_T")
-+
-+
 +class Backtrackable(Generic[_T]):
      """
      Wrap any iterator/iterable so you can step back up to `history` items
      and look ahead up to `lookahead` items.
-@@ -92,23 +96,23 @@ class Backtrackable[T]:
+@@ -97,23 +98,23 @@ class Backtrackable[T]:
  
      __slots__ = ("_source", "_back_buf", "_ahead_buf", "_cursor", "_history", "_lookahead")
  
@@ -52,7 +65,7 @@ index 14d4a52..fa3ffce 100644
          # If we've stepped back, consume from back buffer first
          if self._cursor < 0:  # -1 means "last item", etc.
              self._cursor += 1
-@@ -122,7 +126,7 @@ class Backtrackable[T]:
+@@ -127,7 +128,7 @@ class Backtrackable[T]:
          self._cursor = 0
          return item
  
@@ -61,7 +74,7 @@ index 14d4a52..fa3ffce 100644
          """
          Step one item back in history and return it.
          Raises IndexError if already at the oldest buffered item.
-@@ -133,7 +137,7 @@ class Backtrackable[T]:
+@@ -138,7 +139,7 @@ class Backtrackable[T]:
          self._cursor -= 1
          return self._back_buf[self._cursor]
  
@@ -70,7 +83,7 @@ index 14d4a52..fa3ffce 100644
          """
          Look `n` items back (n=1 == previous item) without moving the cursor.
          """
-@@ -142,7 +146,7 @@ class Backtrackable[T]:
+@@ -147,7 +148,7 @@ class Backtrackable[T]:
  
          return self._back_buf[self._cursor - (n + 1)]
  
@@ -79,7 +92,7 @@ index 14d4a52..fa3ffce 100644
          """
          Look `n` items ahead (n=1 == next item) without moving the cursor.
          Fills the ahead buffer if necessary.
-@@ -163,7 +167,7 @@ class Backtrackable[T]:
+@@ -168,7 +169,7 @@ class Backtrackable[T]:
  
          return self._ahead_buf[n - 1]
  
@@ -89,10 +102,10 @@ index 14d4a52..fa3ffce 100644
          Return a copy of the buffered history (most recent last).
          The list length ≤ `history` argument passed at construction.
 diff --git a/src/lerobot/motors/motors_bus.py b/src/lerobot/motors/motors_bus.py
-index 4688eaa..8bfa55c 100644
+index f4a747b4..63fcd5c1 100644
 --- a/src/lerobot/motors/motors_bus.py
 +++ b/src/lerobot/motors/motors_bus.py
-@@ -29,7 +29,7 @@ from dataclasses import dataclass
+@@ -30,7 +30,7 @@ from dataclasses import dataclass
  from enum import Enum
  from functools import cached_property
  from pprint import pformat
@@ -101,7 +114,7 @@ index 4688eaa..8bfa55c 100644
  
  from tqdm import tqdm
  
-@@ -48,8 +48,8 @@ else:
+@@ -49,8 +49,8 @@ else:
  from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
  from lerobot.utils.utils import enter_pressed, move_cursor_up
  
@@ -113,7 +126,7 @@ index 4688eaa..8bfa55c 100644
  logger = logging.getLogger(__name__)
  
 diff --git a/src/lerobot/processor/pipeline.py b/src/lerobot/processor/pipeline.py
-index b9b9c6c..4fb65a2 100644
+index 54036f98..ea4ea26e 100644
 --- a/src/lerobot/processor/pipeline.py
 +++ b/src/lerobot/processor/pipeline.py
 @@ -38,7 +38,7 @@ from collections.abc import Callable, Iterable, Sequence
@@ -125,7 +138,7 @@ index b9b9c6c..4fb65a2 100644
  
  import torch
  from huggingface_hub import hf_hub_download
-@@ -251,7 +251,7 @@ class ProcessorMigrationError(Exception):
+@@ -258,7 +258,7 @@ class ProcessorMigrationError(Exception):
  
  
  @dataclass
@@ -135,10 +148,10 @@ index b9b9c6c..4fb65a2 100644
  
      This class chains together multiple `ProcessorStep` instances to form a complete
 diff --git a/src/lerobot/utils/io_utils.py b/src/lerobot/utils/io_utils.py
-index e037b41..4076464 100644
+index 3ef793a2..509be6cd 100644
 --- a/src/lerobot/utils/io_utils.py
 +++ b/src/lerobot/utils/io_utils.py
-@@ -16,11 +16,12 @@
+@@ -16,12 +16,12 @@
  import json
  import logging
  from pathlib import Path
@@ -148,11 +161,12 @@ index e037b41..4076464 100644
  logger = logging.getLogger(__name__)
  
  JsonLike = str | int | float | bool | None | list["JsonLike"] | dict[str, "JsonLike"] | tuple["JsonLike", ...]
+-
 +T = TypeVar("T", bound=JsonLike)
  
- 
  def load_json(fpath: Path) -> Any:
-@@ -90,7 +91,7 @@ def write_video(video_path: str | Path, stacked_frames: list, fps: int) -> None:
+     """Load data from a JSON file.
+@@ -90,7 +90,7 @@ def write_video(video_path: str | Path, stacked_frames: list, fps: int) -> None:
              container.mux(packet)
  
  
