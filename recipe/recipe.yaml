@@ -1,5 +1,5 @@
 context:
-  version: "0.6.1"
+  version: "0.7.0"
   build_number: 0
   # Upstream requires-python is ">=3.12" only because of PEP 695 syntax (`type X = ...`,
   # `def f[T](...)`, `class C[T]:`) in a few modules; patch_py311_compat.patch rewrites
@@ -15,7 +15,7 @@ recipe:
 
 source:
   - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 8a890cfd16560c0aeaf440122460c664dc1a8e9a7218b796e5c4c69ae23752a1
+    sha256: f1f3749ba9cf24f5e6ff0df71be4f267ac5193b09b0eb1a7ebb27301c5597588
     patches:
       - patch_pypi_deps_metadata.patch
       - patch_py311_compat.patch
