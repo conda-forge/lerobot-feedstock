@@ -6,23 +6,17 @@ If you are an agent that is updating metadata and recipe for a new release of `l
 
 ## Python extras
 
-In the `conda-forge` packaging of `lerobot`, Python extras like  `lerobot[pygame-dep]` are modeled by separate `lerobot-pygame-dep` output. Note that any underscores in the upstream extra name are converted to hyphens in the conda-forge package name (e.g. `lerobot[multi_task_dit]` becomes `lerobot-multi-task-dit`).
+In the `conda-forge` packaging of `lerobot`, supported Python extras like `lerobot[pygame-dep]` are modeled by separate `lerobot-pygame-dep` outputs. Underscores in an upstream extra name become hyphens in the output name (e.g. `lerobot[multi_task_dit]` becomes `lerobot-multi-task-dit`).
 
-Almost all the extra in the lerobot package are packaged as `lerobot-*` outputs in this recipe, with the exception of:
-* `dev`, `test`, `video_benchmark` and `notebook`: as they are listed as "dev" extras
-* `reachy2`: as `reachy2-sdk` is not available on conda-forge
-* `feetech`: as direct dependency `feetech-servo-sdk` is not available on conda-forge
-* `hopejr`: as indirect dependency `feetech-servo-sdk` is not available on conda-forge
-* `lekiwi`: as indirect dependency `feetech-servo-sdk` is not available on conda-forge
-* `libero`: as the `hf-libero` dependency is not available on conda-forge
-* `metaworld`: as the `metaworld` dependency is not available on conda-forge
-* `groot`: as it is not clear which `flash-attn` and `decord` dependencies 
-         are actually there, and it is not included in `lerobot[all]`
-* `phone`: as `teleop` and `hebi-py` are not in conda-forge
-* `hilserl`: as it requires `gym-hil` that is not in conda-forge
-* `rebot`: as `motorbridge` and `motorbridge-smart-servo` are not available on conda-forge
-* `core_scripts`, `evaluation` and `dataset_viz`: these are just aliases combining `dataset`/`hardware`/`viz` (all packaged individually as `lerobot-dataset`/`lerobot-hardware`/`lerobot-viz`), so they are not packaged as their own output; install the underlying `lerobot-*` outputs you need instead
-* `unitree_g1`, `wallx`, `sarm`, `robometer`, `eo1`, `vla_jepa`, `diffusion`, `molmoact2`, `topreward`, `fastwam`, `evo1`, `lingbot_va` and `annotations`: new extras introduced upstream that are not yet packaged here; their dependencies (including `qwen-vl-utils`, now available on conda-forge) are otherwise packageable, this is just pending work
+The following extras do not have dedicated outputs:
+* `dev`, `test`, `video_benchmark` and `notebook` are development extras.
+* `core_scripts`, `evaluation` and `dataset_viz` combine other features; install the needed `lerobot-dataset`, `lerobot-hardware` and/or `lerobot-viz` outputs instead.
+* `av-dep`, `sentencepiece-dep`, `accelerate-dep`, `diffusers-dep`, `qwen-vl-utils-dep`, `pyserial-dep`, `rustypot-dep`, `deepdiff-dep`, `pynput-dep`, `pyzmq-dep`, `motorbridge-dep`, `motorbridge-smart-servo-dep` and `timm-dep` are dependency helpers. Requirements used by supported extras are included in those outputs directly.
+* `lancedb`, `lancedb-convert`, `serial-motors`, `feetech`, `hopejr`, `lekiwi`, `unitree_g1`, `reachy2`, `rebot`, `yam` and `phone` are not yet packaged as outputs.
+* `diffusion`, `wallx`, `dm05`, `molmoact2`, `groot`, `sarm`, `robometer`, `topreward`, `eo1`, `longwam`, `fastwam`, `flux3`, `evo1`, `fineart_vla`, `fineart_vla_kernels`, `hilserl`, `vla_jepa`, `lingbot_va`, `lingbot_vla_v2`, `wall_oss_05`, `g05`, `lawam` and `cosmos3` are not yet packaged as outputs.
+* `remote`, `annotations`, `libero` and `metaworld` are not yet packaged as outputs.
+
+The existing `lerobot-async` output remains as a compatibility metapackage for its gRPC and plotting dependencies, although upstream 0.7.0 no longer defines an `async` extra.
 
 ## Dependencies metadata changes
 
@@ -41,12 +35,13 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 * `torchvision` and `torchcodec` has complex upper bounds for `D5`. Upper bounds for `torchvision` and `torchcodec` are thus removed in `conda-forge` packaging. As `torchcodec` is available on all conda-forge platforms, all platform specific selectors are removed.
 * `py-opencv` in `pypi` has an upper bound due to `D4`, that is removed in `conda-forge` as we anyhow include `opencv` related tests in the test that we run as part of the `lerobot-tests`.
 * A `numpy` upper bound is present for simplifying solver life in `pypi` (`D1`), upper bound that is removed in `conda-forge`. The lower bound is also relaxed from `>=2.0.0` to `>=1.26.0` for compatibility with IsaacSim 5.1, whose `isaacsim-kernel` package pins `numpy==1.26.0`; no numpy 2.0-only API is used by `lerobot` itself.
-* `requires-python` is `>=3.12` in `pypi` only because of PEP 695 syntax (`type X = ...`, `def f[T](...)`, `class C[T]:`) used in a few modules; a source patch (`patch_py311_compat.patch`) rewrites those to pre-3.12-compatible equivalents (`TypeAlias`, `TypeVar`, `Generic`), so `conda-forge` packaging supports down to Python 3.11 (needed for IsaacSim 5.1 compatibility, which requires Python 3.11).
+  When using NumPy 1.26.0 with SciPy-dependent extras, pin `scipy<1.17`: SciPy 1.17's Python metadata requires NumPy 1.26.4 or newer.
+* `requires-python` is `>=3.12` in `pypi`. A source patch (`patch_py311_compat.patch`) rewrites PEP 695 declarations, avoids evaluating a Python 3.11-incompatible queue type, and backports `itertools.batched` using `more-itertools`, so the package supports Python 3.11 (needed for IsaacSim 5.1 compatibility).
 * The `lerobot` output only carries the true unconditional `dependencies` from `pyproject.toml`. The CLI scripts backed by the `dataset`, `training`, `hardware` and `viz` extras (e.g. `lerobot-record`, `lerobot-train`, `lerobot-dataset-viz`) are still exposed as entry points on the base package, but their extra run dependencies are not force-installed; they are packaged separately as `lerobot-dataset`, `lerobot-training`, `lerobot-hardware` and `lerobot-viz`, which users who need those scripts should install alongside `lerobot`.
 
 ### `lerobot[intelrealsense]`
 
-* `pypi` has an upper bound for the `pyrealsense2` package due to `D4`, that is not necessary in `conda-forge`. As `pyrealsense2` is available on all conda-forge platforms, all platform specific selectors are removed. Furthermore, the fourth version number (i.e. y in x.x.x.y) of `pyrealsense2` should be dropped as `pypi` specific detail.
+* `pypi` has an upper bound for the `pyrealsense2` packages due to `D4`, which is removed. The PyPI metadata retains its platform-specific package names and markers; the conda output uses `pyrealsense2` on every platform and drops the PyPI-specific fourth version component.
 
 ### `lerobot[placo-dep]`
 
@@ -61,6 +56,11 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 ### `lerobot[aloha]`
 
 * `pypi` has an additional dependency on `lerobot[scipy-dep]` to "flatten the dependency tree" (i.e. help on `D1`), so in `conda-forge` we can remove the `lerobot[scipy-dep]` dependency.
+* The minimum `gym-aloha` version is temporarily relaxed to 0.1.4 until 0.1.5 is available on conda-forge. The two releases contain the same environment code; the newer dependency upper bounds are retained in `lerobot-aloha`.
+
+### `lerobot[pusht]`
+
+* The minimum `gym-pusht` version is temporarily relaxed to 0.1.6 until 0.1.8 is available on conda-forge. Version 0.1.6 returns `info["goal_pose"]` as a tuple rather than an array; installing 0.1.8 restores the upstream behavior.
 
 ### `lerobot[all]`
 

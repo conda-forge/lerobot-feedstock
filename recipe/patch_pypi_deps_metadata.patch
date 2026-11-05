@@ -1,44 +1,42 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index f5e9d83f..39721ecf 100644
+index ac10e0c..d9a2db7 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
  dependencies = [
      # Core ML
-     "torch>=2.7,<2.12.0",
--    "torchvision>=0.22.0,<0.27.0",
+     "torch>=2.7,<2.16.0",
+-    "torchvision>=0.22.0,<0.30.0",
 -    "numpy>=2.0.0,<2.3.0", # NOTE: Explicitly listing numpy helps the resolver converge faster. Upper bound imposed by opencv-python-headless.
 -    "opencv-python-headless>=4.9.0,<4.14.0",
 +    "torchvision>=0.22.0",
-+    "numpy>=1.26.0", # NOTE: Explicitly listing numpy helps the resolver converge faster. Upper bound imposed by opencv-python-headless.
++    "numpy>=1.26.0",
 +    "opencv-python-headless>=4.9.0",
-     "Pillow>=10.0.0,<13.0.0",
+     "Pillow>=10.0.0,<14.0.0",
      "einops>=0.8.0,<0.9.0",
  
-@@ -85,9 +85,6 @@ dependencies = [
+@@ -88,9 +88,6 @@ dependencies = [
      "termcolor>=2.4.0,<4.0.0",
      "tqdm>=4.66.0,<5.0.0",
  
 -    # Build tools (required by opencv-python-headless on some platforms)
 -    "cmake>=3.29.0.1,<4.2.0",
--    "setuptools>=71.0.0,<82.0.0",  # torch 2.11 requires setuptools<82; a higher cap makes the resolver downgrade torch
+-    "setuptools>=71.0.0,<85.0.0",
  ]
  
  # Optional dependencies
-@@ -108,10 +105,8 @@ dataset = [
-     # Each platform gets its own line so the resolver picks the minimum version that has a wheel for it.
+@@ -120,9 +117,7 @@ dataset = [
  
-     # Other torch/torchcodec pairings (informational): 0.8.1 = ffmpeg>=8 support, 0.10 = system-wide ffmpeg support, 0.12 needs torch==2.12.
--    "torchcodec>=0.3.0,<0.12.0; (sys_platform == 'linux' and (platform_machine == 'x86_64' or platform_machine == 'AMD64')) or (sys_platform == 'darwin' and platform_machine == 'arm64')",
--    "torchcodec>=0.7.0,<0.12.0; sys_platform == 'win32'",
--    "torchcodec>=0.11.0,<0.12.0; sys_platform == 'linux' and (platform_machine == 'aarch64' or platform_machine == 'arm64')",
--    "jsonlines>=4.0.0,<5.0.0",
-+   "torchcodec>=0.3.0",
-+   "jsonlines>=4.0.0,<5.0.0",
+     # Other torch/torchcodec pairings (informational): 0.8.1 = ffmpeg>=8 support, 0.10 = system-wide ffmpeg support, 0.12+ supports any torch>=2.11.
+     # TorchCodec doesn't declare its torch dependency: an older torch needs its matching TorchCodec release.
+-    "torchcodec>=0.3.0,<0.18.0; (sys_platform == 'linux' and (platform_machine == 'x86_64' or platform_machine == 'AMD64')) or (sys_platform == 'darwin' and platform_machine == 'arm64')",
+-    "torchcodec>=0.7.0,<0.18.0; sys_platform == 'win32'",
+-    "torchcodec>=0.11.0,<0.18.0; sys_platform == 'linux' and (platform_machine == 'aarch64' or platform_machine == 'arm64')",
++    "torchcodec>=0.3.0",
+     "jsonlines>=4.0.0,<5.0.0",
  ]
  training = [
-     "lerobot[dataset]",
-@@ -125,7 +120,6 @@ hardware = [
+@@ -138,7 +133,6 @@ hardware = [
  ]
  viz = [
      "rerun-sdk>=0.24.0,<0.34.0",
@@ -46,17 +44,17 @@ index f5e9d83f..39721ecf 100644
  ]
  # ── User-facing composite extras (map to CLI scripts) ─────
  # lerobot-record, lerobot-replay, lerobot-calibrate, lerobot-teleoperate, etc.
-@@ -148,7 +142,7 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
+@@ -161,7 +155,7 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
  # -> .so.11) ship newer sonames, so left unpinned the resolver grabs them and `import placo`
  # fails at load with "liburdfdom_sensor.so.4.0: cannot open shared object file" (see #3755).
  # There is no cmeel-urdfdom 5.x; <5 selects the 4.x ABI the placo/pin wheels are built against.
 -placo-dep = ["placo>=0.9.6,<0.9.16", "cmeel-urdfdom>=4,<5", "cmeel-tinyxml2<11"]
 +placo-dep = ["placo>=0.9.6"]
- transformers-dep = ["transformers>=5.4.0,<5.6.0"]
+ transformers-dep = ["transformers>=5.22.0,<5.23.0"]
+ sentencepiece-dep = ["sentencepiece>=0.2.0,<0.3.0"] # FAST action tokenizer backend (fineart_vla)
  grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
- accelerate-dep = ["accelerate>=1.14.0,<2.0.0"]
-@@ -198,8 +192,8 @@ reachy2 = [
- rebot = ["lerobot[motorbridge-dep]", "lerobot[motorbridge-smart-servo-dep]"]
+@@ -221,8 +215,8 @@ yam = [
+ ]
  kinematics = ["lerobot[placo-dep]"]
  intelrealsense = [
 -    "pyrealsense2>=2.55.1.6486,<2.57.0 ; sys_platform != 'darwin'",
@@ -66,16 +64,22 @@ index f5e9d83f..39721ecf 100644
  ]
  phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
  
-@@ -266,7 +260,7 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
+@@ -312,8 +306,8 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
  
  # Simulation
  # NOTE: Explicitly listing scipy helps flatten the dependecy tree.
--aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4,<0.2.0", "lerobot[scipy-dep]"]
-+aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4"]
- pusht = ["lerobot[dataset]", "gym-pusht>=0.1.5,<0.2.0", "pymunk>=6.6.0,<7.0.0"] # TODO: Fix pymunk version in gym-pusht instead
+-aloha = ["lerobot[dataset]", "gym-aloha>=0.1.5,<0.2.0", "lerobot[scipy-dep]"]
+-pusht = ["lerobot[dataset]", "gym-pusht>=0.1.8,<0.2.0"]
++aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4,<0.2.0"]
++pusht = ["lerobot[dataset]", "gym-pusht>=0.1.6,<0.2.0"]
  libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
  metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
-@@ -292,48 +286,23 @@ all = [
+ # NOTE: vlabench is NOT exposed as a `lerobot` extra. Its only distribution
+@@ -335,62 +329,22 @@ metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
+ all = [
+     # Feature-scoped extras
+     "lerobot[dataset]",
+-    "lerobot[lancedb]",
      "lerobot[training]",
      "lerobot[hardware]",
      "lerobot[viz]",
@@ -94,22 +98,32 @@ index f5e9d83f..39721ecf 100644
      "lerobot[openarms]",
 -    "lerobot[reachy2]",
 -    "lerobot[rebot]",
+-    "lerobot[yam]",
      "lerobot[kinematics]",
      "lerobot[intelrealsense]",
 -    "lerobot[diffusion]",
      "lerobot[multi_task_dit]",
 -    "lerobot[wallx]",
+-    "lerobot[wall_oss_05]",
      "lerobot[pi]",
+-    "lerobot[dm05]",
+-    "lerobot[fineart_vla]",
 -    "lerobot[molmoact2]",
      "lerobot[smolvla]",
 -    "lerobot[fastwam]",
+-    "lerobot[longwam]",
+-    "lerobot[flux3]",
 -    "lerobot[groot]",
      "lerobot[xvla]",
 -    "lerobot[evo1]",
-     "lerobot[hilserl]",
-     "lerobot[vla_jepa]",
-     "lerobot[lingbot_va]",
-     "lerobot[async]",
+-    "lerobot[hilserl]",
+-    "lerobot[vla_jepa]",
+-    "lerobot[lingbot_va]",
+-    "lerobot[lingbot_vla_v2]",
+-    "lerobot[g05]",
+-    "lerobot[lawam]",
+-    "lerobot[cosmos3]",
+-    "lerobot[remote]",
 -    "lerobot[dev]",
 -    "lerobot[test]",
 -    "lerobot[video_benchmark]",
