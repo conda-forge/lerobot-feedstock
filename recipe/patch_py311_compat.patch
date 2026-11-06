@@ -1,8 +1,8 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index f5e9d83f..10dd6de4 100644
+index d9a2db7..d962c79 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
-@@ -29,7 +29,7 @@ version = "0.6.1"
+@@ -29,7 +29,7 @@ version = "0.7.0"
  description = "🤗 LeRobot: State-of-the-art Machine Learning for Real-World Robotics in Pytorch"
  dynamic = ["readme"]
  license = { text = "Apache-2.0" }
@@ -11,112 +11,132 @@ index f5e9d83f..10dd6de4 100644
  authors = [
      { name = "Rémi Cadène", email = "re.cadene@gmail.com" },
      { name = "Simon Alibert", email = "alibert.sim@gmail.com" },
-diff --git a/src/lerobot/datasets/streaming_dataset.py b/src/lerobot/datasets/streaming_dataset.py
-index d6cc2419..5fb902a1 100644
---- a/src/lerobot/datasets/streaming_dataset.py
-+++ b/src/lerobot/datasets/streaming_dataset.py
-@@ -16,7 +16,7 @@
- from collections import deque
- from collections.abc import Callable, Generator, Iterable, Iterator
+@@ -71,6 +71,7 @@ dependencies = [
+     "huggingface-hub>=1.31.0,<3.0.0",
+     "filelock>=4.2.1,<5.0.0",
+     "fsspec>=2023.5.0,<2027.0.0",
++    "more-itertools>=10.0.0; python_version < '3.12'",
+     "requests>=2.32.0,<3.0.0",
+ 
+     # Environments
+diff --git a/src/lerobot/datasets/aggregate.py b/src/lerobot/datasets/aggregate.py
+index a11404b..73eea7e 100644
+--- a/src/lerobot/datasets/aggregate.py
++++ b/src/lerobot/datasets/aggregate.py
+@@ -19,7 +19,7 @@ import copy
+ import logging
+ import shutil
  from pathlib import Path
--from typing import Literal
-+from typing import Generic, Literal, TypeVar
+-from typing import Any, NotRequired, TypedDict
++from typing import Any, NotRequired, TypeAlias, TypedDict
  
  import datasets
  import numpy as np
-@@ -62,8 +62,9 @@ class LookAheadError(Exception):
- class _ShardExhaustedError(Exception):
-     """Raised when a streaming dataset shard has no more items."""
+@@ -53,8 +53,8 @@ from .video_utils import concatenate_video_files, get_video_duration_in_s
  
-+_T = TypeVar("_T")
+ logger = logging.getLogger(__name__)
  
--class Backtrackable[T]:
-+class Backtrackable(Generic[_T]):
-     """
-     Wrap any iterator/iterable so you can step back up to `history` items
-     and look ahead up to `lookahead` items.
-@@ -97,23 +98,23 @@ class Backtrackable[T]:
+-type FeatureDict = dict[str, dict[str, Any]]
+-type ChunkFile = tuple[int, int]
++FeatureDict: TypeAlias = dict[str, dict[str, Any]]
++ChunkFile: TypeAlias = tuple[int, int]
  
-     __slots__ = ("_source", "_back_buf", "_ahead_buf", "_cursor", "_history", "_lookahead")
  
--    def __init__(self, iterable: Iterable[T], *, history: int = 1, lookahead: int = 0):
-+    def __init__(self, iterable: Iterable[_T], *, history: int = 1, lookahead: int = 0):
-         if history < 1:
-             raise ValueError("history must be >= 1")
-         if lookahead <= 0:
-             raise ValueError("lookahead must be > 0")
+ class IndexState(TypedDict):
+@@ -73,7 +73,7 @@ class VideoIndex(TypedDict):
+     dst_file_durations: NotRequired[dict[ChunkFile, float]]
  
--        self._source: Iterator[T] = iter(iterable)
--        self._back_buf: deque[T] = deque(maxlen=history)
--        self._ahead_buf: deque[T] = deque(maxlen=lookahead) if lookahead > 0 else deque()
-+        self._source: Iterator[_T] = iter(iterable)
-+        self._back_buf: deque[_T] = deque(maxlen=history)
-+        self._ahead_buf: deque[_T] = deque(maxlen=lookahead) if lookahead > 0 else deque()
-         self._cursor: int = 0
-         self._history = history
-         self._lookahead = lookahead
  
--    def __iter__(self) -> "Backtrackable[T]":
-+    def __iter__(self) -> "Backtrackable[_T]":
-         return self
+-type VideoIndexState = dict[str, VideoIndex]
++VideoIndexState: TypeAlias = dict[str, VideoIndex]
  
--    def __next__(self) -> T:
-+    def __next__(self) -> _T:
-         # If we've stepped back, consume from back buffer first
-         if self._cursor < 0:  # -1 means "last item", etc.
-             self._cursor += 1
-@@ -127,7 +128,7 @@ class Backtrackable[T]:
-         self._cursor = 0
-         return item
  
--    def prev(self) -> T:
-+    def prev(self) -> _T:
-         """
-         Step one item back in history and return it.
-         Raises IndexError if already at the oldest buffered item.
-@@ -138,7 +139,7 @@ class Backtrackable[T]:
-         self._cursor -= 1
-         return self._back_buf[self._cursor]
+ def merge_video_feature_info_for_aggregate(all_metadata: list[LeRobotDatasetMetadata]) -> FeatureDict:
+diff --git a/src/lerobot/datasets/image_writer.py b/src/lerobot/datasets/image_writer.py
+index fb6cd16..4e2f4c4 100644
+--- a/src/lerobot/datasets/image_writer.py
++++ b/src/lerobot/datasets/image_writer.py
+@@ -17,8 +17,10 @@ import logging
+ import multiprocessing
+ import multiprocessing.queues
+ import queue
++import sys
+ import threading
+ from pathlib import Path
++from typing import TYPE_CHECKING
  
--    def peek_back(self, n: int = 1) -> T:
-+    def peek_back(self, n: int = 1) -> _T:
-         """
-         Look `n` items back (n=1 == previous item) without moving the cursor.
-         """
-@@ -147,7 +148,7 @@ class Backtrackable[T]:
+ import numpy as np
+ import PIL.Image
+@@ -28,9 +30,12 @@ logger = logging.getLogger(__name__)
  
-         return self._back_buf[self._cursor - (n + 1)]
+ # One pending write: (image, destination path, PNG compress level). ``None`` is the stop sentinel.
+ ImageWriterItem = tuple[np.ndarray | PIL.Image.Image, Path, int]
+-ImageWriterQueue = (
+-    queue.Queue[ImageWriterItem | None] | multiprocessing.queues.JoinableQueue[ImageWriterItem | None]
+-)
++if TYPE_CHECKING or sys.version_info >= (3, 12):
++    ImageWriterQueue = (
++        queue.Queue[ImageWriterItem | None] | multiprocessing.queues.JoinableQueue[ImageWriterItem | None]
++    )
++else:
++    ImageWriterQueue = queue.Queue[ImageWriterItem | None] | multiprocessing.queues.JoinableQueue
  
--    def peek_ahead(self, n: int = 1) -> T:
-+    def peek_ahead(self, n: int = 1) -> _T:
-         """
-         Look `n` items ahead (n=1 == next item) without moving the cursor.
-         Fills the ahead buffer if necessary.
-@@ -168,7 +169,7 @@ class Backtrackable[T]:
  
-         return self._ahead_buf[n - 1]
+ def safe_stop_image_writer(func):
+diff --git a/src/lerobot/datasets/lance_backend.py b/src/lerobot/datasets/lance_backend.py
+index ce7b535..d4e2475 100644
+--- a/src/lerobot/datasets/lance_backend.py
++++ b/src/lerobot/datasets/lance_backend.py
+@@ -34,9 +34,13 @@ from collections import OrderedDict, defaultdict
+ from collections.abc import Callable, Iterator, Mapping, Sequence
+ from concurrent.futures import Future, ThreadPoolExecutor
+ from functools import partial
+-from itertools import batched
+ from pathlib import Path
+-from typing import TYPE_CHECKING, TypedDict
++from typing import TYPE_CHECKING, TypedDict, TypeVar
++
++try:
++    from itertools import batched
++except ImportError:
++    from more_itertools import batched
  
--    def history(self) -> list[T]:
-+    def history(self) -> list[_T]:
-         """
-         Return a copy of the buffered history (most recent last).
-         The list length ≤ `history` argument passed at construction.
+ import numpy as np
+ import torch
+@@ -92,6 +96,8 @@ _DEPTH_DECODE_MAX_BYTES = 64 << 20
+ # Leave extra headroom for the selected-frame stack and allocator overhead.
+ _DEPTH_DECODE_BYTES_PER_VALUE = 8
+ 
++T = TypeVar("T")
++
+ 
+ def _decode_frame_limit(
+     shape: Sequence[int] | None,
+@@ -167,7 +173,7 @@ class _EpisodeSubsetIndexMapping(Mapping[int, int]):
+         return NotImplemented
+ 
+ 
+-def _opened[T](resource: T | None) -> T:
++def _opened(resource: T | None) -> T:
+     """Return a lazily-opened reader resource, raising if ``_ensure_open()`` has not run."""
+     if resource is None:
+         raise RuntimeError("LanceDatasetReader is not open; call _ensure_open() first.")
 diff --git a/src/lerobot/motors/motors_bus.py b/src/lerobot/motors/motors_bus.py
-index f4a747b4..63fcd5c1 100644
+index c1f1ba4..a53f5e5 100644
 --- a/src/lerobot/motors/motors_bus.py
 +++ b/src/lerobot/motors/motors_bus.py
-@@ -30,7 +30,7 @@ from dataclasses import dataclass
+@@ -25,7 +25,7 @@ from dataclasses import dataclass
  from enum import Enum
  from functools import cached_property
  from pprint import pformat
--from typing import TYPE_CHECKING, Protocol
-+from typing import TYPE_CHECKING, Protocol, TypeAlias
+-from typing import TYPE_CHECKING
++from typing import TYPE_CHECKING, TypeAlias
  
- from tqdm import tqdm
- 
-@@ -49,8 +49,8 @@ else:
  from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
- from lerobot.utils.utils import enter_pressed, move_cursor_up
+ from lerobot.utils.errors import DeviceNotConnectedError
+@@ -41,8 +41,8 @@ else:
+ # but reports a fault is a different thing, carried by the status error byte.
+ _TRANSPORT_ERRORS = (RuntimeError, OSError)
  
 -type NameOrID = str | int
 -type Value = int | float
@@ -125,20 +145,69 @@ index f4a747b4..63fcd5c1 100644
  
  logger = logging.getLogger(__name__)
  
+diff --git a/src/lerobot/policies/wall_oss_05/modeling_wall_oss_05.py b/src/lerobot/policies/wall_oss_05/modeling_wall_oss_05.py
+index 9652b74..ae0a25c 100644
+--- a/src/lerobot/policies/wall_oss_05/modeling_wall_oss_05.py
++++ b/src/lerobot/policies/wall_oss_05/modeling_wall_oss_05.py
+@@ -19,7 +19,7 @@ from __future__ import annotations
+ import math
+ from collections import deque
+ from dataclasses import dataclass
+-from typing import TYPE_CHECKING, Any
++from typing import TYPE_CHECKING, Any, TypeAlias
+ 
+ import torch
+ import torch.nn.functional as functional
+@@ -66,7 +66,7 @@ class WallOSS05Output:
+     text_loss: Tensor | None = None
+ 
+ 
+-type WallOSS05KeyValue = tuple[Tensor, Tensor]
++WallOSS05KeyValue: TypeAlias = tuple[Tensor, Tensor]
+ 
+ 
+ class WallOSS05RMSNorm(nn.Module):
 diff --git a/src/lerobot/processor/pipeline.py b/src/lerobot/processor/pipeline.py
-index 54036f98..ea4ea26e 100644
+index 37ea6e0..719f012 100644
 --- a/src/lerobot/processor/pipeline.py
 +++ b/src/lerobot/processor/pipeline.py
 @@ -38,7 +38,7 @@ from collections.abc import Callable, Iterable, Sequence
  from copy import deepcopy
  from dataclasses import dataclass, field
  from pathlib import Path
--from typing import Any, TypedDict, TypeVar, cast
-+from typing import Any, Generic, TypedDict, TypeVar, cast
+-from typing import Any, ClassVar, TypedDict, TypeVar, cast
++from typing import Any, ClassVar, Generic, TypedDict, TypeVar, cast
  
  import torch
- from huggingface_hub import hf_hub_download
-@@ -258,7 +258,7 @@ class ProcessorMigrationError(Exception):
+ from huggingface_hub import hf_hub_download, snapshot_download
+@@ -61,6 +61,8 @@ from .converters import batch_to_transition, create_transition, transition_to_ba
+ # Generic type variables for pipeline input and output.
+ TInput = TypeVar("TInput")
+ TOutput = TypeVar("TOutput")
++StepT = TypeVar("StepT", bound="ProcessorStep")
++T = TypeVar("T")
+ 
+ 
+ class ProcessorStepRegistry:
+@@ -75,7 +77,7 @@ class ProcessorStepRegistry:
+     _registry: dict[str, type[ProcessorStep]] = {}
+ 
+     @classmethod
+-    def register[StepT: ProcessorStep](cls, name: str | None = None) -> Callable[[type[StepT]], type[StepT]]:
++    def register(cls, name: str | None = None) -> Callable[[type[StepT]], type[StepT]]:
+         """A class decorator to register a ProcessorStep.
+ 
+         Args:
+@@ -263,7 +265,7 @@ class ProcessorMigrationError(Exception):
+         )
+ 
+ 
+-def _require_component[T](component: T | None, name: str) -> T:
++def _require_component(component: T | None, name: str) -> T:
+     """Return a transition component, raising if a processor step dropped it (set it to `None`)."""
+     if component is None:
+         raise ValueError(f"A processor step dropped the {name} from the transition.")
+@@ -271,7 +273,7 @@ def _require_component[T](component: T | None, name: str) -> T:
  
  
  @dataclass
@@ -147,11 +216,108 @@ index 54036f98..ea4ea26e 100644
      """A sequential pipeline for processing data, integrated with the Hugging Face Hub.
  
      This class chains together multiple `ProcessorStep` instances to form a complete
+diff --git a/src/lerobot/rewards/sarm/sarm_utils.py b/src/lerobot/rewards/sarm/sarm_utils.py
+index 323fb9d..21816cb 100644
+--- a/src/lerobot/rewards/sarm/sarm_utils.py
++++ b/src/lerobot/rewards/sarm/sarm_utils.py
+@@ -14,15 +14,15 @@
+ 
+ import random
+ from collections.abc import Sequence
+-from typing import overload
++from typing import TypeAlias, overload
+ 
+ import numpy as np
+ import torch
+ import torch.nn.functional as F  # noqa: N812
+ from numpy.typing import NDArray
+ 
+-type SubtaskNames = Sequence[str] | NDArray[np.object_]
+-type SubtaskFrames = Sequence[int] | NDArray[np.int64]
++SubtaskNames: TypeAlias = Sequence[str] | NDArray[np.object_]
++SubtaskFrames: TypeAlias = Sequence[int] | NDArray[np.int64]
+ 
+ 
+ def find_stage_and_tau(
+diff --git a/src/lerobot/robots/sim_robot/config_sim_robot.py b/src/lerobot/robots/sim_robot/config_sim_robot.py
+index 5352dcc..a22fb89 100644
+--- a/src/lerobot/robots/sim_robot/config_sim_robot.py
++++ b/src/lerobot/robots/sim_robot/config_sim_robot.py
+@@ -13,7 +13,7 @@
+ # limitations under the License.
+ 
+ from dataclasses import dataclass
+-from typing import TYPE_CHECKING, Any, get_args, get_type_hints
++from typing import TYPE_CHECKING, Any, TypeAlias, get_args, get_type_hints
+ 
+ from draccus.choice_types import ChoiceType
+ 
+@@ -56,7 +56,7 @@ class _SimulatedEnvChoices(ChoiceType):
+ 
+ # Type checkers see an EnvConfig; draccus parses the filtered choices.
+ if TYPE_CHECKING:
+-    type SimulatedEnvConfig = EnvConfig
++    SimulatedEnvConfig: TypeAlias = EnvConfig
+ else:
+     SimulatedEnvConfig = _SimulatedEnvChoices
+ 
+diff --git a/src/lerobot/streaming/mp4.py b/src/lerobot/streaming/mp4.py
+index 6d48f75..3fa1339 100644
+--- a/src/lerobot/streaming/mp4.py
++++ b/src/lerobot/streaming/mp4.py
+@@ -14,7 +14,7 @@ import struct
+ from collections.abc import Callable, Iterable
+ from dataclasses import dataclass
+ from functools import cached_property
+-from typing import Any, Literal, overload
++from typing import Any, Literal, TypeAlias, overload
+ 
+ import numpy as np
+ from numpy.typing import NDArray
+@@ -23,7 +23,7 @@ from numpy.typing import NDArray
+ # larger boxes cost one more exact read.
+ DEFAULT_HEADER_PROBE_BYTES = 512 * 1024
+ 
+-type IntegerArray = NDArray[np.integer[Any]]
++IntegerArray: TypeAlias = NDArray[np.integer[Any]]
+ 
+ 
+ def _constant_integer_value(values: IntegerArray) -> int | None:
+diff --git a/src/lerobot/transport/zenoh.py b/src/lerobot/transport/zenoh.py
+index be6c1b6..42b431c 100644
+--- a/src/lerobot/transport/zenoh.py
++++ b/src/lerobot/transport/zenoh.py
+@@ -27,13 +27,15 @@ from collections.abc import Callable
+ from contextlib import suppress
+ from dataclasses import dataclass, field
+ from queue import Empty, Full, Queue
+-from typing import TYPE_CHECKING, Any, Literal, cast
++from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
+ 
+ from lerobot.utils.import_utils import _zenoh_available, require_package
+ 
+ if TYPE_CHECKING or _zenoh_available:
+     import zenoh
+ 
++T = TypeVar("T")
++
+ 
+ class TransportError(RuntimeError):
+     """A transport operation failed validation or could not complete successfully."""
+@@ -103,7 +105,7 @@ def _payload(value: bytes, maximum: int) -> None:
+         raise TransportError("Payload is not bytes or exceeds transport limit")
+ 
+ 
+-class BoundedSubscriber[T]:
++class BoundedSubscriber(Generic[T]):
+     """Bounded callback-to-consumer FIFO; full queues drop incoming values.
+ 
+     Consumers must inspect ``dropped`` and ``oversized``. The transport owns declared
 diff --git a/src/lerobot/utils/io_utils.py b/src/lerobot/utils/io_utils.py
-index 3ef793a2..509be6cd 100644
+index 2e4dd87..0fa0cf1 100644
 --- a/src/lerobot/utils/io_utils.py
 +++ b/src/lerobot/utils/io_utils.py
-@@ -16,12 +16,12 @@
+@@ -16,11 +16,12 @@
  import json
  import logging
  from pathlib import Path
@@ -161,12 +327,11 @@ index 3ef793a2..509be6cd 100644
  logger = logging.getLogger(__name__)
  
  JsonLike = str | int | float | bool | None | list["JsonLike"] | dict[str, "JsonLike"] | tuple["JsonLike", ...]
--
 +T = TypeVar("T", bound=JsonLike)
  
+ 
  def load_json(fpath: Path) -> Any:
-     """Load data from a JSON file.
-@@ -90,7 +90,7 @@ def write_video(video_path: str | Path, stacked_frames: list, fps: int) -> None:
+@@ -90,7 +91,7 @@ def write_video(video_path: str | Path, stacked_frames: list, fps: int) -> None:
              container.mux(packet)
  
  

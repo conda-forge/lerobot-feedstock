@@ -1,13 +1,12 @@
 context:
-  version: "0.6.1"
+  version: "0.7.0"
   build_number: 0
-  # Upstream requires-python is ">=3.12" only because of PEP 695 syntax (`type X = ...`,
-  # `def f[T](...)`, `class C[T]:`) in a few modules; patch_py311_compat.patch rewrites
-  # those to pre-3.12-compatible equivalents so we can support down to 3.11.
+  # patch_py311_compat.patch backports PEP 695 syntax and itertools.batched
+  # so that the package remains usable with Python 3.11.
   python_min: "3.11"
   # These are a subset of the tests that are representative of the different submodules of lerobot
   # and that are not too heavy to run in package creation phase
-  representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/utils/test_io_utils.py tests/utils/test_encoding_utils.py tests/optim/test_schedulers.py
+  representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/utils/test_io_utils.py tests/utils/test_feature_spec.py tests/test_streaming_compact.py tests/envs/test_envs.py::test_factory[pusht] tests/envs/test_envs.py::test_env[pusht-PushT-v0-state] tests/optim/test_schedulers.py
 
 recipe:
   name: lerobot-split
@@ -15,7 +14,7 @@ recipe:
 
 source:
   - url: https://github.com/huggingface/lerobot/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 8a890cfd16560c0aeaf440122460c664dc1a8e9a7218b796e5c4c69ae23752a1
+    sha256: f1f3749ba9cf24f5e6ff0df71be4f267ac5193b09b0eb1a7ebb27301c5597588
     patches:
       - patch_pypi_deps_metadata.patch
       - patch_py311_compat.patch
@@ -46,6 +45,7 @@ outputs:
       script: ${{ PYTHON }} -m pip install .
       python:
         entry_points:
+          - lerobot-build-mp4-sidecar = lerobot.scripts.lerobot_build_mp4_sidecar:main
           - lerobot-calibrate = lerobot.scripts.lerobot_calibrate:main
           - lerobot-find-cameras = lerobot.scripts.lerobot_find_cameras:main
           - lerobot-find-port = lerobot.scripts.lerobot_find_port:main
@@ -53,6 +53,8 @@ outputs:
           - lerobot-replay = lerobot.scripts.lerobot_replay:main
           - lerobot-setup-motors = lerobot.scripts.lerobot_setup_motors:main
           - lerobot-teleoperate = lerobot.scripts.lerobot_teleoperate:main
+          - lerobot-convert-dcp = lerobot.scripts.lerobot_convert_dcp:main
+          - lerobot-env-server = lerobot.scripts.lerobot_env_server:main
           - lerobot-eval = lerobot.scripts.lerobot_eval:main
           - lerobot-train = lerobot.scripts.lerobot_train:main
           - lerobot-train-tokenizer = lerobot.scripts.lerobot_train_tokenizer:main
@@ -64,6 +66,7 @@ outputs:
           - lerobot-setup-can = lerobot.scripts.lerobot_setup_can:main
           - lerobot-annotate = lerobot.scripts.lerobot_annotate:main
           - lerobot-rollout = lerobot.scripts.lerobot_rollout:main
+          - lerobot-policy-server = lerobot.scripts.lerobot_policy_server:main
 
     requirements:
       host:
@@ -72,22 +75,25 @@ outputs:
         - pip
       run:
         - python >=${{ python_min }}
-        - huggingface_hub >=1.0.0,<2.0.0
+        - huggingface_hub >=1.31.0,<3.0.0
+        - filelock >=4.2.1,<5.0.0
+        - fsspec >=2023.5.0,<2027.0.0
+        - more-itertools >=10.0.0
         # Lower bound relaxed from upstream's >=2.0.0 for IsaacSim 5.1 compat,
         # whose isaacsim-kernel package pins numpy==1.26.0; no numpy 2.0-only
         # API is used by lerobot itself.
         - numpy >=1.26.0
         - einops >=0.8.0,<0.9.0
         - py-opencv >=4.9.0
-        - pillow >=10.0.0,<13.0.0
+        - pillow >=10.0.0,<14.0.0
         - requests >=2.32.0,<3.0.0
         - safetensors >=0.4.3,<1.0.0
         - tqdm >=4.66.0,<5.0.0
-        - packaging >=24.2,<26.0
-        - draccus ==0.11.6
+        - packaging >=24.2,<27.0
+        - draccus >=0.11.6,<0.12.0
         - gymnasium >=1.1.1,<2.0.0
         - termcolor >=2.4.0,<4.0.0
-        - pytorch >=2.7,<2.12.0
+        - pytorch >=2.7,<2.16.0
         # torchvision is strictly bound in PyPI metadata as it is ABI
         # constrained but this is not reflected in their PyPI metadata; as
         # conda-forge this ABI constraint is reflected, we can relax the
@@ -150,13 +156,18 @@ outputs:
           pip_check: false
           imports:
             - lerobot
+          python_version: ${{ python_min }}.*
       - files:
           source:
             - tests/**
         requirements:
           run:
             - pytest
+            - python ${{ python_min }}.*
         script:
+          - python -c "import compileall, pathlib, lerobot; assert compileall.compile_dir(str(pathlib.Path(lerobot.__file__).parent), quiet=1)"
+          - python -c "from lerobot.datasets.lance_backend import _opened, batched; assert _opened(1) == 1 and list(batched(range(5), 2)) == [(0, 1), (2, 3), (4,)]"
+          - python -c "from lerobot.transport.zenoh import BoundedSubscriber; queue = BoundedSubscriber[int](1); assert queue._offer(3) and queue.get() == 3"
           - if: linux
             then: export MUJOCO_GL="egl"
           # Workaround for https://github.com/conda-forge/gymnasium-feedstock/pull/50#issuecomment-3218125344
@@ -205,7 +216,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - transformers >=5.4.0,<5.6.0
+        - transformers >=5.22.0,<5.23.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -285,7 +296,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - datasets >=4.7.0,<5.0.0
+        - datasets >=4.8.0,<6.0.0
         - pandas >=2.0.0,<3.0.0
         - pyarrow >=21.0.0,<30.0.0
         - av >=15.0.0,<16.0.0
@@ -307,7 +318,9 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
-        - wandb >=0.24.0,<0.28.0
+        - trackio >=0.44.0,<1.0.0
+        - psutil >=5.9.0
+        - nvidia-ml-py >=12.0.0
         - accelerate >=1.14.0,<2.0.0
     tests:
       - script:
@@ -354,7 +367,8 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - dynamixel-sdk >=3.7.31,<3.9.0
+        - rustypot >=1.13.1,<2.0.0
+        - pyserial >=3.5,<4.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -462,6 +476,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - diffusers >=0.38.0,<0.40.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -491,6 +506,7 @@ outputs:
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
         - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
+        - sentencepiece >=0.2.0,<0.3.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -517,7 +533,10 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
         - gym-aloha >=0.1.4,<0.2.0
+        - dm-control >=1.0.15,<1.1.0
+        - imageio >=2.34.0,<3.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -530,7 +549,8 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - gym-pusht >=0.1.5,<0.2.0
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - gym-pusht >=0.1.6,<0.2.0
         - pymunk >=6.6.0,<7.0.0
     tests:
       - script:
