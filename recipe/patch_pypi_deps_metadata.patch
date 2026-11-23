@@ -44,7 +44,7 @@ index ac10e0c..d9a2db7 100644
  ]
  # ── User-facing composite extras (map to CLI scripts) ─────
  # lerobot-record, lerobot-replay, lerobot-calibrate, lerobot-teleoperate, etc.
-@@ -161,7 +155,7 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
+@@ -161,10 +155,10 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
  # -> .so.11) ship newer sonames, so left unpinned the resolver grabs them and `import placo`
  # fails at load with "liburdfdom_sensor.so.4.0: cannot open shared object file" (see #3755).
  # There is no cmeel-urdfdom 5.x; <5 selects the 4.x ABI the placo/pin wheels are built against.
@@ -52,7 +52,8 @@ index ac10e0c..d9a2db7 100644
 +placo-dep = ["placo>=0.9.6"]
  transformers-dep = ["transformers>=5.22.0,<5.23.0"]
  sentencepiece-dep = ["sentencepiece>=0.2.0,<0.3.0"] # FAST action tokenizer backend (fineart_vla)
- grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
+-grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
++grpcio-dep = ["grpcio>=1.73.1", "protobuf>=6.31.1"]
 @@ -221,8 +215,8 @@ yam = [
  ]
  kinematics = ["lerobot[placo-dep]"]

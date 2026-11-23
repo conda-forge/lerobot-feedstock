@@ -1,12 +1,12 @@
 context:
   version: "0.7.0"
-  build_number: 0
+  build_number: 1
   # patch_py311_compat.patch backports PEP 695 syntax and itertools.batched
   # so that the package remains usable with Python 3.11.
   python_min: "3.11"
   # These are a subset of the tests that are representative of the different submodules of lerobot
   # and that are not too heavy to run in package creation phase
-  representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/utils/test_io_utils.py tests/utils/test_feature_spec.py tests/test_streaming_compact.py tests/envs/test_envs.py::test_factory[pusht] tests/envs/test_envs.py::test_env[pusht-PushT-v0-state] tests/optim/test_schedulers.py
+  representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/rl/test_actor.py tests/utils/test_io_utils.py tests/utils/test_feature_spec.py tests/test_streaming_compact.py tests/envs/test_envs.py::test_factory[pusht] tests/envs/test_envs.py::test_env[pusht-PushT-v0-state] tests/optim/test_schedulers.py
 
 recipe:
   name: lerobot-split
@@ -229,11 +229,15 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - grpcio >=1.73.1,<2.0.0
-        - protobuf >=6.31.1,<8.0.0
+        - grpcio >=1.73.1
+        - protobuf >=6.31.1
     tests:
-      - script:
-          - echo "tested in lerobot-tests"
+      - python:
+          imports:
+            - lerobot.transport.services_pb2
+            - lerobot.transport.services_pb2_grpc
+          pip_check: true
+          python_version: ${{ python_min }}.*
 
   - package:
       name: lerobot-peft-dep

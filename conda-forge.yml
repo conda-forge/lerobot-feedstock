@@ -6,6 +6,7 @@ remote_ci_setup:
   - conda-build
   - conda-forge-ci-setup
 github:
+  repo_name: lerobot-feedstock
   branch_name: main
   tooling_branch_name: main
 conda_build:

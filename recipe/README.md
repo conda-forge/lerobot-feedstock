@@ -48,6 +48,10 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 * `pypi` has an upperbound for `placo` due to `D1`, `D4` and `D5`, that is not required in `conda-forge`, so the upper bound is removed.
 * `pypi` also pins `cmeel-urdfdom` and `cmeel-tinyxml2` to work around an ABI mismatch (`D2`); neither is available as a conda-forge pypi-mapped package, and on conda-forge the corresponding native libraries are pulled in as regular dependencies of the `placo` conda package, so both are removed.
 
+### `lerobot[grpcio-dep]`
+
+* `pypi` has upper bounds on `grpcio` (`<2.0.0`) and `protobuf` (`<8.0.0`) due to `D4`. Neither `ValidateProtobufRuntimeVersion` in `lerobot.transport.services_pb2` nor the gRPC runtime check in `lerobot.transport.services_pb2_grpc` enforces an upper bound, and conda-forge's `protobuf` increments its major version with each `libprotobuf` release, so both upper bounds are removed while retaining the generated-code lower bounds (`grpcio>=1.73.1`, `protobuf>=6.31.1`). Transport and gRPC actor tests are included in `lerobot-tests`.
+
 ### `lerobot[viz]`
 
 * `pypi` requires `foxglove-sdk`, which is not available on conda-forge, so it is removed; `lerobot-viz` only carries `rerun-sdk`.
