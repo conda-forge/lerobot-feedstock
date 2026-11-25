@@ -24,8 +24,6 @@ The following extras do not have dedicated outputs because one or more required 
 | `libero` | `hf-libero >=0.1.4,<0.2.0` (Linux dependency) |
 | `metaworld` | `metaworld ==3.0.0` |
 
-`lerobot-async` was dropped as upstream 0.7.0 no longer defines an `async` extra or `lerobot.async_inference`.
-
 ## Dependencies metadata changes
 
 The `pypi` ecosystem (used by lerobot upstream) and `conda-forge` ecosystem are quite different, for a number of reasons (see https://pypackaging-native.github.io/ for in-depth discussion on this):
@@ -68,11 +66,7 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 ### `lerobot[aloha]`
 
 * `pypi` has an additional dependency on `lerobot[scipy-dep]` to "flatten the dependency tree" (i.e. help on `D1`), so in `conda-forge` we can remove the `lerobot[scipy-dep]` dependency.
-* The minimum `gym-aloha` version is temporarily relaxed to 0.1.4 until 0.1.5 is available on conda-forge. The two releases contain the same environment code. Runtime dependencies such as `dm-control` and `imageio` are supplied by `gym-aloha`, rather than duplicated with historical bounds in `lerobot-aloha`.
-
-### `lerobot[pusht]`
-
-* The minimum `gym-pusht` version is temporarily relaxed to 0.1.6 until 0.1.8 is available on conda-forge. The direct `pymunk >=6.6.0,<7.0.0` requirement is retained in the recipe and patched Python metadata: `gym-pusht` 0.1.6 calls `Space.add_collision_handler`, which Pymunk 7 removed. Its transitive dependency alone does not enforce this compatibility bound. Version 0.1.6 returns `info["goal_pose"]` as a tuple rather than an array; installing 0.1.8 restores the upstream behavior.
+* Runtime dependencies such as `dm-control` and `imageio` are supplied by `gym-aloha`, rather than duplicated in `lerobot-aloha`.
 
 ### `lerobot[test]`
 

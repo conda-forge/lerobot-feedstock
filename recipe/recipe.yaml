@@ -556,7 +556,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
-        - gym-aloha >=0.1.4,<0.2.0
+        - gym-aloha >=0.1.5,<0.2.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -570,9 +570,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
-        - gym-pusht >=0.1.6,<0.2.0
-        # gym-pusht 0.1.6 uses Space.add_collision_handler, removed in Pymunk 7.
-        - pymunk >=6.6.0,<7.0.0
+        - gym-pusht >=0.1.8,<0.2.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
