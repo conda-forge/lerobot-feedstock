@@ -75,4 +75,4 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 ### `lerobot[all]`
 
 * `pypi` has an additional dependency on `scipy` to "helps pip's resolver " (i.. help on `D1`), so in `conda-forge` we can remove the `scipy` dependency.
-* In `conda-forge`, we remove from `lerobot[all]` all the extras that we do not package in `conda-forge`.
+* In `conda-forge`, we remove from `lerobot[all]` all the extras that we do not package in `conda-forge`. The patched `[all]` removes only `reachy2`, `rebot`, `yam`, `hilserl`, `phone`, `libero` and `metaworld`, keeping it in sync with `lerobot-all`.

@@ -1,5 +1,5 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index ac10e0c..d9a2db7 100644
+index ac10e0c..d2dc77a 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
@@ -54,6 +54,9 @@ index ac10e0c..d9a2db7 100644
  sentencepiece-dep = ["sentencepiece>=0.2.0,<0.3.0"] # FAST action tokenizer backend (fineart_vla)
 -grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
 +grpcio-dep = ["grpcio>=1.73.1", "protobuf>=6.31.1"]
+ accelerate-dep = ["accelerate>=1.14.0,<2.0.0"]
+ can-dep = ["python-can>=4.2.0,<5.0.0"]
+ peft-dep = ["peft>=0.18.0,<1.0.0"]
 @@ -221,8 +215,8 @@ yam = [
  ]
  kinematics = ["lerobot[placo-dep]"]
@@ -65,22 +68,16 @@ index ac10e0c..d9a2db7 100644
  ]
  phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
  
-@@ -312,8 +306,8 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
+@@ -312,7 +306,7 @@ video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
  
  # Simulation
  # NOTE: Explicitly listing scipy helps flatten the dependecy tree.
 -aloha = ["lerobot[dataset]", "gym-aloha>=0.1.5,<0.2.0", "lerobot[scipy-dep]"]
--pusht = ["lerobot[dataset]", "gym-pusht>=0.1.8,<0.2.0"]
-+aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4,<0.2.0"]
-+pusht = ["lerobot[dataset]", "gym-pusht>=0.1.6,<0.2.0"]
++aloha = ["lerobot[dataset]", "gym-aloha>=0.1.5,<0.2.0"]
+ pusht = ["lerobot[dataset]", "gym-pusht>=0.1.8,<0.2.0"]
  libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
  metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
- # NOTE: vlabench is NOT exposed as a `lerobot` extra. Its only distribution
-@@ -335,62 +329,22 @@ metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
- all = [
-     # Feature-scoped extras
-     "lerobot[dataset]",
--    "lerobot[lancedb]",
+@@ -339,11 +333,6 @@ all = [
      "lerobot[training]",
      "lerobot[hardware]",
      "lerobot[viz]",
@@ -90,52 +87,33 @@ index ac10e0c..d9a2db7 100644
 -    # the loose scipy requirements from transitive deps like dm-control and metaworld.
 -    "scipy>=1.14.0,<2.0.0",
      "lerobot[dynamixel]",
--    "lerobot[feetech]",
+     "lerobot[feetech]",
      "lerobot[damiao]",
-     "lerobot[robstride]",
-     "lerobot[gamepad]",
--    "lerobot[hopejr]",
--    "lerobot[lekiwi]",
+@@ -352,9 +341,6 @@ all = [
+     "lerobot[hopejr]",
+     "lerobot[lekiwi]",
      "lerobot[openarms]",
 -    "lerobot[reachy2]",
 -    "lerobot[rebot]",
 -    "lerobot[yam]",
      "lerobot[kinematics]",
      "lerobot[intelrealsense]",
--    "lerobot[diffusion]",
-     "lerobot[multi_task_dit]",
--    "lerobot[wallx]",
--    "lerobot[wall_oss_05]",
-     "lerobot[pi]",
--    "lerobot[dm05]",
--    "lerobot[fineart_vla]",
--    "lerobot[molmoact2]",
-     "lerobot[smolvla]",
--    "lerobot[fastwam]",
--    "lerobot[longwam]",
--    "lerobot[flux3]",
--    "lerobot[groot]",
+     "lerobot[diffusion]",
+@@ -372,7 +358,6 @@ all = [
+     "lerobot[groot]",
      "lerobot[xvla]",
--    "lerobot[evo1]",
+     "lerobot[evo1]",
 -    "lerobot[hilserl]",
--    "lerobot[vla_jepa]",
--    "lerobot[lingbot_va]",
--    "lerobot[lingbot_vla_v2]",
--    "lerobot[g05]",
--    "lerobot[lawam]",
--    "lerobot[cosmos3]",
--    "lerobot[remote]",
--    "lerobot[dev]",
--    "lerobot[test]",
--    "lerobot[video_benchmark]",
+     "lerobot[vla_jepa]",
+     "lerobot[lingbot_va]",
+     "lerobot[lingbot_vla_v2]",
+@@ -385,9 +370,6 @@ all = [
+     "lerobot[video_benchmark]",
      "lerobot[aloha]",
      "lerobot[pusht]",
 -    "lerobot[phone]",
 -    "lerobot[libero]; sys_platform == 'linux'",
 -    "lerobot[metaworld]",
--    "lerobot[sarm]",
--    "lerobot[robometer]",
--    "lerobot[topreward]",
-     "lerobot[peft]",
-     # "lerobot[unitree_g1]", TODO: Unitree requires specific installation instructions for unitree_sdk2
- ]
+     "lerobot[sarm]",
+     "lerobot[robometer]",
+     "lerobot[topreward]",
