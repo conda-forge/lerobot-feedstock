@@ -56,7 +56,7 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 ### `lerobot[grpcio-dep]`
 
-* `pypi` has upper bounds on `grpcio` (`<2.0.0`) and `protobuf` (`<8.0.0`) due to `D4`. Neither `ValidateProtobufRuntimeVersion` in `lerobot.transport.services_pb2` nor the gRPC runtime check in `lerobot.transport.services_pb2_grpc` enforces an upper bound, and conda-forge's `protobuf` increments its major version with each `libprotobuf` release, so both upper bounds are removed while retaining the generated-code lower bounds (`grpcio>=1.73.1`, `protobuf>=6.31.1`). Transport and gRPC actor tests are included in `lerobot-tests`.
+* `pypi` has upper bounds on `grpcio` (`<2.0.0`) and `protobuf` (`<8.0.0`) due to `D4`. conda-forge's Python `protobuf` package follows upstream's per-language versioning, distinct from the `libprotobuf` major version. Neither `ValidateProtobufRuntimeVersion` in `lerobot.transport.services_pb2` nor the gRPC runtime check in `lerobot.transport.services_pb2_grpc` rejects newer runtimes (only runtimes older than the generated code), so the generated-code lower bounds are retained (`grpcio>=1.73.1`, `protobuf>=6.31.1`). The upper bounds are dropped as a deliberate `D4` policy: future major releases are not verified in advance, and if one breaks `lerobot`, the conda-forge metadata can be patched (repodata patching). Transport and gRPC actor tests are included in `lerobot-tests`.
 
 ### `lerobot[training]`
 
