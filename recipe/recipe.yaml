@@ -364,7 +364,8 @@ outputs:
         - trackio >=0.44.0,<1.0.0
         - ${{ pin_subpackage('lerobot-accelerate-dep', exact=True) }}
         - psutil >=5.9.0
-        - nvidia-ml-py >=12.0.0
+        - if: not osx
+          then: nvidia-ml-py >=12.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
