@@ -58,6 +58,10 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 * `pypi` has upper bounds on `grpcio` (`<2.0.0`) and `protobuf` (`<8.0.0`) due to `D4`. Neither `ValidateProtobufRuntimeVersion` in `lerobot.transport.services_pb2` nor the gRPC runtime check in `lerobot.transport.services_pb2_grpc` enforces an upper bound, and conda-forge's `protobuf` increments its major version with each `libprotobuf` release, so both upper bounds are removed while retaining the generated-code lower bounds (`grpcio>=1.73.1`, `protobuf>=6.31.1`). Transport and gRPC actor tests are included in `lerobot-tests`.
 
+### `lerobot[groot]`
+
+* `pypi` restricts `decord` to x86 (`platform_machine`) because of wheel availability (`D3`). conda-forge builds `decord` for Linux and macOS on all architectures, so `lerobot-groot` requires it on every platform except Windows, where `decord` is not packaged. The patched Python metadata uses the matching `sys_platform != 'win32'` marker. As a consequence `lerobot-groot` and `lerobot-all` resolve on Windows without `decord`.
+
 ### `lerobot[viz]`
 
 * `pypi` requires `foxglove-sdk >=0.25.1,<0.26.0`, which is not available on conda-forge, so it is removed. `lerobot-viz` supplies Rerun visualization; Foxglove functionality is unavailable through this output.

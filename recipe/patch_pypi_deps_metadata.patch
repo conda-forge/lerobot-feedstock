@@ -1,5 +1,5 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index ac10e0c..81a099c 100644
+index ac10e0c..7074b37 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
@@ -68,6 +68,15 @@ index ac10e0c..81a099c 100644
  ]
  phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
  
+@@ -246,7 +240,7 @@ groot = [
+     "lerobot[dataset]", # NOTE: processor_groot builds a LeRobotDataset for relative-action training stats
+     "dm-tree>=0.1.8,<1.0.0",
+     "lerobot[timm-dep]",
+-    "decord>=0.6.0,<1.0.0; (platform_machine == 'AMD64' or platform_machine == 'x86_64')",
++    "decord>=0.6.0,<1.0.0; sys_platform != 'win32'",
+ ]
+ sarm = ["lerobot[transformers-dep]", "pydantic>=2.0.0,<3.0.0", "faker>=33.0.0,<35.0.0", "lerobot[matplotlib-dep]", "lerobot[qwen-vl-utils-dep]"]
+ robometer = ["lerobot[transformers-dep]", "lerobot[qwen-vl-utils-dep]", "lerobot[peft-dep]"]
 @@ -307,12 +301,12 @@ annotations = [
  # Development
  dev = ["pre-commit>=3.7.0,<5.0.0", "debugpy>=1.8.1,<1.9.0", "lerobot[grpcio-dep]", "grpcio-tools>=1.73.1,<2.0.0", "mypy>=2.0.0,<3.0.0", "ruff>=0.14.1", "lerobot[notebook]"]
