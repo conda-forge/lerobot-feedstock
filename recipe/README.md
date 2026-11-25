@@ -70,7 +70,7 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 ### `lerobot[test]`
 
-* `mock-serial >=0.0.1,<0.1.0` is unavailable on conda-forge, so it is removed. The output includes the three pytest dependencies; tests needing mock serial ports require a separate installation of `mock-serial`.
+* `mock-serial >=0.0.1,<0.1.0 ; sys_platform != 'win32'` is unavailable on conda-forge, so it is removed from both the `lerobot-test` output and the patched Python metadata. The output includes the three pytest dependencies; tests needing mock serial ports require a separate installation of `mock-serial`.
 
 ### `lerobot[all]`
 
