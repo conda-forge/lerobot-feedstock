@@ -364,8 +364,7 @@ outputs:
         - trackio >=0.44.0,<1.0.0
         - ${{ pin_subpackage('lerobot-accelerate-dep', exact=True) }}
         - psutil >=5.9.0
-        - if: not osx
-          then: nvidia-ml-py >=12.0.0
+        - nvidia-ml-py >=12.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -1006,8 +1005,7 @@ outputs:
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
         - dm-tree >=0.1.8,<1.0.0
         - ${{ pin_subpackage('lerobot-timm-dep', exact=True) }}
-        - if: not win
-          then: decord >=0.6.0,<1.0.0
+        - decord >=0.6.0,<1.0.0
     tests:
       - python:
           imports:

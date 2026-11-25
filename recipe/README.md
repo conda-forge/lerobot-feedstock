@@ -60,11 +60,11 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 ### `lerobot[training]`
 
-* `pypi` uses `trackio[gpu]` (adding `psutil` and `nvidia-ml-py`) on non-macOS platforms and `trackio[apple-gpu]` (adding only `psutil`) on macOS. `lerobot-training` mirrors this: `psutil` is always required, while `nvidia-ml-py` is required on all platforms except macOS.
+* `pypi` uses `trackio[gpu]` (adding `psutil` and `nvidia-ml-py`) on non-macOS platforms and `trackio[apple-gpu]` (adding only `psutil`) on macOS. As `lerobot-training` is a `noarch` output and cannot use platform selectors, it requires `nvidia-ml-py` unconditionally, including on macOS.
 
 ### `lerobot[groot]`
 
-* `pypi` restricts `decord` to x86 (`platform_machine`) because of wheel availability (`D3`). conda-forge builds `decord` for Linux and macOS on all architectures, so `lerobot-groot` requires it on every platform except Windows, where `decord` is not packaged. The patched Python metadata uses the matching `sys_platform != 'win32'` marker. As a consequence `lerobot-groot` and `lerobot-all` resolve on Windows without `decord`.
+* `pypi` restricts `decord` to x86 because of wheel availability (`D3`). conda-forge builds `decord` for Linux and macOS on all architectures, so `lerobot-groot` (a `noarch` output without platform selectors) requires it unconditionally; the architecture marker is also removed from the patched Python metadata. `decord` is not packaged for Windows, so `lerobot-groot` and `lerobot-all` cannot be installed there.
 
 ### `lerobot[viz]`
 
