@@ -1,4 +1,4 @@
-# `lerobot` conda-forge packaging 
+# `lerobot` conda-forge packaging
 
 This README documents the design choices used in the `lerobot` conda-forge package.
 
@@ -8,15 +8,21 @@ If you are an agent that is updating metadata and recipe for a new release of `l
 
 In the `conda-forge` packaging of `lerobot`, supported Python extras like `lerobot[pygame-dep]` are modeled by separate `lerobot-pygame-dep` outputs. Underscores in an upstream extra name become hyphens in the output name (e.g. `lerobot[multi_task_dit]` becomes `lerobot-multi-task-dit`).
 
-The following extras do not have dedicated outputs:
-* `dev`, `test`, `video_benchmark` and `notebook` are development extras.
-* `core_scripts`, `evaluation` and `dataset_viz` combine other features; install the needed `lerobot-dataset`, `lerobot-hardware` and/or `lerobot-viz` outputs instead.
-* `av-dep`, `sentencepiece-dep`, `accelerate-dep`, `diffusers-dep`, `qwen-vl-utils-dep`, `pyserial-dep`, `rustypot-dep`, `deepdiff-dep`, `pynput-dep`, `pyzmq-dep`, `motorbridge-dep`, `motorbridge-smart-servo-dep` and `timm-dep` are dependency helpers. Requirements used by supported extras are included in those outputs directly.
-* `lancedb`, `lancedb-convert`, `serial-motors`, `feetech`, `hopejr`, `lekiwi`, `unitree_g1`, `reachy2`, `rebot`, `yam` and `phone` are not yet packaged as outputs.
-* `diffusion`, `wallx`, `dm05`, `molmoact2`, `groot`, `sarm`, `robometer`, `topreward`, `eo1`, `longwam`, `fastwam`, `flux3`, `evo1`, `fineart_vla`, `fineart_vla_kernels`, `hilserl`, `vla_jepa`, `lingbot_va`, `lingbot_vla_v2`, `wall_oss_05`, `g05`, `lawam` and `cosmos3` are not yet packaged as outputs.
-* `remote`, `annotations`, `libero` and `metaworld` are not yet packaged as outputs.
+The following extras do not have dedicated outputs because one or more required dependencies are not yet available on conda-forge:
 
-The existing `lerobot-async` output remains as a compatibility metapackage for its gRPC and plotting dependencies, although upstream 0.7.0 no longer defines an `async` extra.
+| Upstream extra | Blocking dependency or extra |
+| --- | --- |
+| `lancedb-convert` | `lerobot-lancedb >=0.3.1,<0.4.0` |
+| `motorbridge-dep` | `motorbridge >=0.5,<0.6` |
+| `motorbridge-smart-servo-dep` | `motorbridge-smart-servo >=0.0.4,<0.1.0` |
+| `reachy2` | `reachy2-sdk >=1.0.15,<1.1.0` |
+| `rebot` | `motorbridge-dep` and `motorbridge-smart-servo-dep` |
+| `yam` | `motorbridge-dep` |
+| `phone` | `hebi-py >=2.8.0,<2.12.0` and `teleop >=0.1.0,<0.2.0` |
+| `fineart_vla_kernels` | `kernels >=0.14.1,<0.15.0` |
+| `hilserl` | `gym-hil >=0.1.14,<0.2.0` |
+| `libero` | `hf-libero >=0.1.4,<0.2.0` (Linux dependency) |
+| `metaworld` | `metaworld ==3.0.0` |
 
 ## Dependencies metadata changes
 
@@ -50,23 +56,31 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 ### `lerobot[grpcio-dep]`
 
-* `pypi` has upper bounds on `grpcio` (`<2.0.0`) and `protobuf` (`<8.0.0`) due to `D4`. Neither `ValidateProtobufRuntimeVersion` in `lerobot.transport.services_pb2` nor the gRPC runtime check in `lerobot.transport.services_pb2_grpc` enforces an upper bound, and conda-forge's `protobuf` increments its major version with each `libprotobuf` release, so both upper bounds are removed while retaining the generated-code lower bounds (`grpcio>=1.73.1`, `protobuf>=6.31.1`). Transport and gRPC actor tests are included in `lerobot-tests`.
+* `pypi` has upper bounds on `grpcio` (`<2.0.0`) and `protobuf` (`<8.0.0`) due to `D4`. conda-forge's Python `protobuf` package follows upstream's per-language versioning, distinct from the `libprotobuf` major version. Neither `ValidateProtobufRuntimeVersion` in `lerobot.transport.services_pb2` nor the gRPC runtime check in `lerobot.transport.services_pb2_grpc` rejects newer runtimes (only runtimes older than the generated code), so the generated-code lower bounds are retained (`grpcio>=1.73.1`, `protobuf>=6.31.1`). The upper bounds are dropped as a deliberate `D4` policy: future major releases are not verified in advance, and if one breaks `lerobot`, the conda-forge metadata can be patched (repodata patching). Transport and gRPC actor tests are included in `lerobot-tests`.
+
+### `lerobot[training]`
+
+* `pypi` uses `trackio[gpu]` (adding `psutil` and `nvidia-ml-py`) on non-macOS platforms and `trackio[apple-gpu]` (adding only `psutil`) on macOS. As `lerobot-training` is a `noarch` output and cannot use platform selectors, it requires `nvidia-ml-py` unconditionally, including on macOS.
+
+### `lerobot[groot]`
+
+* `pypi` restricts `decord` to x86 because of wheel availability (`D3`). conda-forge builds `decord` for Linux and macOS on all architectures, so `lerobot-groot` (a `noarch` output without platform selectors) requires it unconditionally; the architecture marker is also removed from the patched Python metadata. `decord` is not packaged for Windows, so `lerobot-groot` and `lerobot-all` cannot be installed there.
 
 ### `lerobot[viz]`
 
-* `pypi` requires `foxglove-sdk`, which is not available on conda-forge, so it is removed; `lerobot-viz` only carries `rerun-sdk`.
+* `pypi` requires `foxglove-sdk >=0.25.1,<0.26.0`, which is not available on conda-forge, so it is removed. `lerobot-viz` supplies Rerun visualization; Foxglove functionality is unavailable through this output.
 * `rerun-sdk` bundles `rerun-notebook`, whose own (unconditional) PyPI metadata requires `ipykernel<7.0.0` (`D2`); conda-forge's `rerun-sdk` package does not declare this, so `ipykernel<7.0.0` is added explicitly to `lerobot-viz`.
 
 ### `lerobot[aloha]`
 
 * `pypi` has an additional dependency on `lerobot[scipy-dep]` to "flatten the dependency tree" (i.e. help on `D1`), so in `conda-forge` we can remove the `lerobot[scipy-dep]` dependency.
-* The minimum `gym-aloha` version is temporarily relaxed to 0.1.4 until 0.1.5 is available on conda-forge. The two releases contain the same environment code; the newer dependency upper bounds are retained in `lerobot-aloha`.
+* Runtime dependencies such as `dm-control` and `imageio` are supplied by `gym-aloha`, rather than duplicated in `lerobot-aloha`.
 
-### `lerobot[pusht]`
+### `lerobot[test]`
 
-* The minimum `gym-pusht` version is temporarily relaxed to 0.1.6 until 0.1.8 is available on conda-forge. Version 0.1.6 returns `info["goal_pose"]` as a tuple rather than an array; installing 0.1.8 restores the upstream behavior.
+* `mock-serial >=0.0.1,<0.1.0 ; sys_platform != 'win32'` is unavailable on conda-forge, so it is removed from both the `lerobot-test` output and the patched Python metadata. The output includes the three pytest dependencies; tests needing mock serial ports require a separate installation of `mock-serial`.
 
 ### `lerobot[all]`
 
 * `pypi` has an additional dependency on `scipy` to "helps pip's resolver " (i.. help on `D1`), so in `conda-forge` we can remove the `scipy` dependency.
-* In `conda-forge`, we remove from `lerobot[all]` all the extras that we do not package in `conda-forge`.
+* In `conda-forge`, we remove from `lerobot[all]` all the extras that we do not package in `conda-forge`. The patched `[all]` removes only `reachy2`, `rebot`, `yam`, `hilserl`, `phone`, `libero` and `metaworld`, keeping it in sync with `lerobot-all`.

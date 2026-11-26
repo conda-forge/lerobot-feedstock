@@ -1,12 +1,26 @@
 context:
   version: "0.7.0"
-  build_number: 1
+  build_number: 2
   # patch_py311_compat.patch backports PEP 695 syntax and itertools.batched
   # so that the package remains usable with Python 3.11.
   python_min: "3.11"
-  # These are a subset of the tests that are representative of the different submodules of lerobot
-  # and that are not too heavy to run in package creation phase
-  representative_tests: tests/cameras/test_opencv.py tests/configs/test_plugin_loading.py tests/scripts/test_edit_dataset_parsing.py tests/utils/test_random_utils.py tests/transport/test_transport_utils.py tests/rl/test_actor.py tests/utils/test_io_utils.py tests/utils/test_feature_spec.py tests/test_streaming_compact.py tests/envs/test_envs.py::test_factory[pusht] tests/envs/test_envs.py::test_env[pusht-PushT-v0-state] tests/optim/test_schedulers.py
+  # Fast CPU tests using local fixtures: cameras, config/CLI parsing, RNG state,
+  # legacy gRPC and current remote protocol, JSON I/O, feature validation,
+  # synthetic MP4 streaming, PushT compatibility, and learning-rate schedules.
+  representative_tests: >-
+    tests/cameras/test_opencv.py
+    tests/configs/test_plugin_loading.py
+    tests/scripts/test_edit_dataset_parsing.py
+    tests/utils/test_random_utils.py
+    tests/transport/test_transport_utils.py
+    tests/transport/test_protocol_codec.py
+    tests/transport/test_protocol_envelope.py
+    tests/utils/test_io_utils.py
+    tests/utils/test_feature_spec.py
+    tests/test_streaming_compact.py
+    tests/envs/test_envs.py::test_factory[pusht]
+    tests/envs/test_envs.py::test_env[pusht-PushT-v0-state]
+    tests/optim/test_schedulers.py
 
 recipe:
   name: lerobot-split
@@ -114,26 +128,53 @@ outputs:
         - python ${{ python_min }}.*
       run:
         - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - ${{ pin_subpackage('lerobot-lancedb', exact=True) }}
         - ${{ pin_subpackage('lerobot-training', exact=True) }}
         - ${{ pin_subpackage('lerobot-hardware', exact=True) }}
         - ${{ pin_subpackage('lerobot-viz', exact=True) }}
         - ${{ pin_subpackage('lerobot-dynamixel', exact=True) }}
+        - ${{ pin_subpackage('lerobot-feetech', exact=True) }}
         - ${{ pin_subpackage('lerobot-damiao', exact=True) }}
         - ${{ pin_subpackage('lerobot-robstride', exact=True) }}
         - ${{ pin_subpackage('lerobot-gamepad', exact=True) }}
+        - ${{ pin_subpackage('lerobot-hopejr', exact=True) }}
+        - ${{ pin_subpackage('lerobot-lekiwi', exact=True) }}
         - ${{ pin_subpackage('lerobot-openarms', exact=True) }}
         - ${{ pin_subpackage('lerobot-kinematics', exact=True) }}
         - ${{ pin_subpackage('lerobot-intelrealsense', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusion', exact=True) }}
         - ${{ pin_subpackage('lerobot-multi-task-dit', exact=True) }}
+        - ${{ pin_subpackage('lerobot-wallx', exact=True) }}
+        - ${{ pin_subpackage('lerobot-wall-oss-05', exact=True) }}
         - ${{ pin_subpackage('lerobot-pi', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dm05', exact=True) }}
+        - ${{ pin_subpackage('lerobot-fineart-vla', exact=True) }}
+        - ${{ pin_subpackage('lerobot-molmoact2', exact=True) }}
         - ${{ pin_subpackage('lerobot-smolvla', exact=True) }}
+        - ${{ pin_subpackage('lerobot-fastwam', exact=True) }}
+        - ${{ pin_subpackage('lerobot-longwam', exact=True) }}
+        - ${{ pin_subpackage('lerobot-flux3', exact=True) }}
+        - ${{ pin_subpackage('lerobot-groot', exact=True) }}
         - ${{ pin_subpackage('lerobot-xvla', exact=True) }}
-        - ${{ pin_subpackage('lerobot-async', exact=True) }}
-        - ${{ pin_subpackage('lerobot-peft', exact=True) }}
+        - ${{ pin_subpackage('lerobot-evo1', exact=True) }}
+        - ${{ pin_subpackage('lerobot-vla-jepa', exact=True) }}
+        - ${{ pin_subpackage('lerobot-lingbot-va', exact=True) }}
+        - ${{ pin_subpackage('lerobot-lingbot-vla-v2', exact=True) }}
+        - ${{ pin_subpackage('lerobot-g05', exact=True) }}
+        - ${{ pin_subpackage('lerobot-lawam', exact=True) }}
+        - ${{ pin_subpackage('lerobot-cosmos3', exact=True) }}
+        - ${{ pin_subpackage('lerobot-remote', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dev', exact=True) }}
+        - ${{ pin_subpackage('lerobot-test', exact=True) }}
+        - ${{ pin_subpackage('lerobot-video-benchmark', exact=True) }}
         - ${{ pin_subpackage('lerobot-aloha', exact=True) }}
         - ${{ pin_subpackage('lerobot-pusht', exact=True) }}
-
+        - ${{ pin_subpackage('lerobot-sarm', exact=True) }}
+        - ${{ pin_subpackage('lerobot-robometer', exact=True) }}
+        - ${{ pin_subpackage('lerobot-topreward', exact=True) }}
+        - ${{ pin_subpackage('lerobot-peft', exact=True) }}
     tests:
       - python:
           imports:
@@ -178,9 +219,9 @@ outputs:
           - if: unix
             then:
               - export SDL_VIDEODRIVER="dummy"
-              - pytest -v ${{ representative_tests }}
-          - if: win
-            then: pytest -v ${{ representative_tests }}
+              - export LEROBOT_TEST_DEVICE="cpu"
+            else: set LEROBOT_TEST_DEVICE=cpu
+          - python -m pytest -v -m "not gpu" --timeout=60 ${{ representative_tests }}
 
   - package:
       name: lerobot-pygame-dep
@@ -303,10 +344,7 @@ outputs:
         - datasets >=4.8.0,<6.0.0
         - pandas >=2.0.0,<3.0.0
         - pyarrow >=21.0.0,<30.0.0
-        - av >=15.0.0,<16.0.0
-        # torchcodec is strictly bound per-platform in PyPI metadata based on
-        # wheel availability, but conda-forge builds torchcodec for all
-        # platforms, so a single unconstrained lower bound is enough here
+        - ${{ pin_subpackage('lerobot-av-dep', exact=True) }}
         - torchcodec >=0.3.0
         - jsonlines >=4.0.0,<5.0.0
     tests:
@@ -323,9 +361,9 @@ outputs:
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
         - trackio >=0.44.0,<1.0.0
+        - ${{ pin_subpackage('lerobot-accelerate-dep', exact=True) }}
         - psutil >=5.9.0
         - nvidia-ml-py >=12.0.0
-        - accelerate >=1.14.0,<2.0.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -338,9 +376,9 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - pynput >=1.7.8,<1.9.0
-        - pyserial >=3.5,<4.0
-        - deepdiff >=7.0.1,<9.0.0
+        - ${{ pin_subpackage('lerobot-pynput-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pyserial-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-deepdiff-dep', exact=True) }}
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -354,11 +392,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - rerun-sdk >=0.24.0,<0.34.0
-        # rerun-sdk bundles rerun-notebook, whose own (unconditional) PyPI metadata
-        # requires ipykernel<7.0.0; conda-forge's rerun-sdk package does not declare
-        # this, so pip_check fails without it listed explicitly here.
         - ipykernel <7.0.0
-        # foxglove-sdk is also part of upstream `viz` but is not packaged on conda-forge, so it is omitted
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -371,8 +405,7 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        - rustypot >=1.13.1,<2.0.0
-        - pyserial >=3.5,<4.0
+        - ${{ pin_subpackage('lerobot-serial-motors', exact=True) }}
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -451,8 +484,6 @@ outputs:
       run:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
-        # We do not include the upper bound as conda-forge includes
-        # librealse 2.57 that is not include in pypi
         - pyrealsense2 >=2.55.1
     tests:
       - script:
@@ -480,7 +511,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
-        - diffusers >=0.38.0,<0.40.0
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -495,7 +526,7 @@ outputs:
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
         - num2words >=0.5.14,<0.6.0
-        - accelerate >=1.14.0,<2.0.0
+        - ${{ pin_subpackage('lerobot-accelerate-dep', exact=True) }}
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -510,21 +541,7 @@ outputs:
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
         - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
-        - sentencepiece >=0.2.0,<0.3.0
-    tests:
-      - script:
-          - echo "tested in lerobot-tests"
-
-  - package:
-      name: lerobot-async
-    requirements:
-      host:
-        - python ${{ python_min }}.*
-      run:
-        - python >=${{ python_min }}
-        - ${{ pin_subpackage('lerobot', exact=True) }}
-        - ${{ pin_subpackage('lerobot-grpcio-dep', exact=True) }}
-        - ${{ pin_subpackage('lerobot-matplotlib-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-sentencepiece-dep', exact=True) }}
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -538,9 +555,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
-        - gym-aloha >=0.1.4,<0.2.0
-        - dm-control >=1.0.15,<1.1.0
-        - imageio >=2.34.0,<3.0.0
+        - gym-aloha >=0.1.5,<0.2.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -554,8 +569,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
-        - gym-pusht >=0.1.6,<0.2.0
-        - pymunk >=6.6.0,<7.0.0
+        - gym-pusht >=0.1.8,<0.2.0
     tests:
       - script:
           - echo "tested in lerobot-tests"
@@ -573,6 +587,825 @@ outputs:
     tests:
       - script:
           - echo "tested in lerobot-tests"
+
+  - package:
+      name: lerobot-lancedb
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - lancedb >=0.37.1,<0.40.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-core-scripts
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - ${{ pin_subpackage('lerobot-hardware', exact=True) }}
+        - ${{ pin_subpackage('lerobot-viz', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-evaluation
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-av-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-dataset-viz
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - ${{ pin_subpackage('lerobot-viz', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-av-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - av >=15.0.0,<16.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-sentencepiece-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - sentencepiece >=0.2.0,<0.3.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-accelerate-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - accelerate >=1.14.0,<2.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-diffusers-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - diffusers >=0.38.0,<0.40.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-qwen-vl-utils-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - qwen-vl-utils >=0.0.11,<0.1.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-pyserial-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - pyserial >=3.5,<4.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-rustypot-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - rustypot >=1.13.1,<2.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-deepdiff-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - deepdiff >=7.0.1,<9.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-pynput-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - pynput >=1.7.8,<1.9.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-pyzmq-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - pyzmq >=26.2.1,<28.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-timm-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - timm >=1.0.0,<1.1.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-serial-motors
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-rustypot-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pyserial-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-feetech
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-serial-motors', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-hopejr
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-feetech', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pygame-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-lekiwi
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-feetech', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pyzmq-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-unitree-g1
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pyzmq-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pyserial-dep', exact=True) }}
+        - onnxruntime >=1.16.0,<2.0.0
+        - onnx >=1.16.0,<2.0.0
+        - meshcat-python >=0.3.0,<0.4.0
+        - ${{ pin_subpackage('lerobot-matplotlib-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pygame-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-diffusion
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-wallx
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-peft-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-qwen-vl-utils-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-dm05
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-molmoact2
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-peft-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-groot
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-peft-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - dm-tree >=0.1.8,<1.0.0
+        - ${{ pin_subpackage('lerobot-timm-dep', exact=True) }}
+        - decord >=0.6.0,<1.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-sarm
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - pydantic >=2.0.0,<3.0.0
+        - faker >=33.0.0,<35.0.0
+        - ${{ pin_subpackage('lerobot-matplotlib-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-qwen-vl-utils-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-robometer
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-qwen-vl-utils-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-peft-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-topreward
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-eo1
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-qwen-vl-utils-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-longwam
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-sentencepiece-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-fastwam
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-flux3
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-evo1
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-fineart-vla
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-pi', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-vla-jepa
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-qwen-vl-utils-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-lingbot-va
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-accelerate-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-lingbot-vla-v2
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-wall-oss-05
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-g05
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-lawam
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-cosmos3
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-diffusers-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-remote
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - eclipse-zenoh >=1.9.0,<1.11.0
+        - msgpack-python >=1.1.0,<2.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot.transport.zenoh
+            - zenoh
+            - msgpack
+          pip_check: false
+          python_version: ${{ python_min }}.*
+      - requirements:
+          run:
+            - python ${{ python_min }}.*
+        script:
+          - >-
+            python -c "import msgpack; from lerobot.transport.zenoh import ZenohConfig;
+            assert msgpack.unpackb(msgpack.packb({'remote': True})) == {'remote': True};
+            ZenohConfig(listen_endpoints=['tcp/127.0.0.1:0']).build()"
+
+  - package:
+      name: lerobot-annotations
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - ${{ pin_subpackage('lerobot-transformers-dep', exact=True) }}
+        - openai >=1.40,<2.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-dev
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - pre-commit >=3.7.0,<5.0.0
+        - debugpy >=1.8.1,<1.9.0
+        - ${{ pin_subpackage('lerobot-grpcio-dep', exact=True) }}
+        - grpcio-tools >=1.73.1,<2.0.0
+        - mypy >=2.0.0,<3.0.0
+        - ruff >=0.14.1
+        - ${{ pin_subpackage('lerobot-notebook', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-notebook
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - jupyter >=1.0.0,<2.0.0
+        - ipykernel >=6.0.0,<7.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-test
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - pytest >=8.1.0,<10.0.0
+        - pytest-timeout >=2.4.0,<3.0.0
+        - pytest-cov >=5.0.0,<8.0.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+            - pytest
+            - pytest_cov
+            - pytest_timeout
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-video-benchmark
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - scikit-image >=0.23.2,<0.26.0
+        - pandas >=2.2.2,<2.4.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
 
 about:
   homepage: https://github.com/huggingface/lerobot
