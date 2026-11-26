@@ -1,5 +1,5 @@
 diff --git a/pyproject.toml b/pyproject.toml
-index ac10e0c..7074b37 100644
+index ac10e0c..b05c1b3 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -60,9 +60,9 @@ keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artifici
@@ -36,15 +36,7 @@ index ac10e0c..7074b37 100644
      "jsonlines>=4.0.0,<5.0.0",
  ]
  training = [
-@@ -138,7 +133,6 @@ hardware = [
- ]
- viz = [
-     "rerun-sdk>=0.24.0,<0.34.0",
--    "foxglove-sdk>=0.25.1,<0.26.0",
- ]
- # ── User-facing composite extras (map to CLI scripts) ─────
- # lerobot-record, lerobot-replay, lerobot-calibrate, lerobot-teleoperate, etc.
-@@ -161,10 +155,10 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
+@@ -161,10 +156,10 @@ pygame-dep = ["pygame>=2.5.1,<2.7.0"]
  # -> .so.11) ship newer sonames, so left unpinned the resolver grabs them and `import placo`
  # fails at load with "liburdfdom_sensor.so.4.0: cannot open shared object file" (see #3755).
  # There is no cmeel-urdfdom 5.x; <5 selects the 4.x ABI the placo/pin wheels are built against.
@@ -57,7 +49,7 @@ index ac10e0c..7074b37 100644
  accelerate-dep = ["accelerate>=1.14.0,<2.0.0"]
  can-dep = ["python-can>=4.2.0,<5.0.0"]
  peft-dep = ["peft>=0.18.0,<1.0.0"]
-@@ -221,8 +215,8 @@ yam = [
+@@ -221,8 +216,8 @@ yam = [
  ]
  kinematics = ["lerobot[placo-dep]"]
  intelrealsense = [
@@ -68,7 +60,7 @@ index ac10e0c..7074b37 100644
  ]
  phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
  
-@@ -246,7 +240,7 @@ groot = [
+@@ -246,7 +241,7 @@ groot = [
      "lerobot[dataset]", # NOTE: processor_groot builds a LeRobotDataset for relative-action training stats
      "dm-tree>=0.1.8,<1.0.0",
      "lerobot[timm-dep]",
@@ -77,7 +69,7 @@ index ac10e0c..7074b37 100644
  ]
  sarm = ["lerobot[transformers-dep]", "pydantic>=2.0.0,<3.0.0", "faker>=33.0.0,<35.0.0", "lerobot[matplotlib-dep]", "lerobot[qwen-vl-utils-dep]"]
  robometer = ["lerobot[transformers-dep]", "lerobot[qwen-vl-utils-dep]", "lerobot[peft-dep]"]
-@@ -307,12 +301,12 @@ annotations = [
+@@ -307,12 +302,12 @@ annotations = [
  # Development
  dev = ["pre-commit>=3.7.0,<5.0.0", "debugpy>=1.8.1,<1.9.0", "lerobot[grpcio-dep]", "grpcio-tools>=1.73.1,<2.0.0", "mypy>=2.0.0,<3.0.0", "ruff>=0.14.1", "lerobot[notebook]"]
  notebook = ["jupyter>=1.0.0,<2.0.0", "ipykernel>=6.0.0,<7.0.0"]
@@ -92,7 +84,7 @@ index ac10e0c..7074b37 100644
  pusht = ["lerobot[dataset]", "gym-pusht>=0.1.8,<0.2.0"]
  libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
  metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
-@@ -339,11 +333,6 @@ all = [
+@@ -339,11 +334,6 @@ all = [
      "lerobot[training]",
      "lerobot[hardware]",
      "lerobot[viz]",
@@ -104,17 +96,15 @@ index ac10e0c..7074b37 100644
      "lerobot[dynamixel]",
      "lerobot[feetech]",
      "lerobot[damiao]",
-@@ -352,9 +341,6 @@ all = [
+@@ -352,7 +342,6 @@ all = [
      "lerobot[hopejr]",
      "lerobot[lekiwi]",
      "lerobot[openarms]",
 -    "lerobot[reachy2]",
--    "lerobot[rebot]",
--    "lerobot[yam]",
+     "lerobot[rebot]",
+     "lerobot[yam]",
      "lerobot[kinematics]",
-     "lerobot[intelrealsense]",
-     "lerobot[diffusion]",
-@@ -372,7 +358,6 @@ all = [
+@@ -372,7 +361,6 @@ all = [
      "lerobot[groot]",
      "lerobot[xvla]",
      "lerobot[evo1]",
@@ -122,13 +112,12 @@ index ac10e0c..7074b37 100644
      "lerobot[vla_jepa]",
      "lerobot[lingbot_va]",
      "lerobot[lingbot_vla_v2]",
-@@ -385,9 +370,6 @@ all = [
+@@ -385,8 +373,6 @@ all = [
      "lerobot[video_benchmark]",
      "lerobot[aloha]",
      "lerobot[pusht]",
 -    "lerobot[phone]",
 -    "lerobot[libero]; sys_platform == 'linux'",
--    "lerobot[metaworld]",
+     "lerobot[metaworld]",
      "lerobot[sarm]",
      "lerobot[robometer]",
-     "lerobot[topreward]",

@@ -13,16 +13,11 @@ The following extras do not have dedicated outputs because one or more required 
 | Upstream extra | Blocking dependency or extra |
 | --- | --- |
 | `lancedb-convert` | `lerobot-lancedb >=0.3.1,<0.4.0` |
-| `motorbridge-dep` | `motorbridge >=0.5,<0.6` |
-| `motorbridge-smart-servo-dep` | `motorbridge-smart-servo >=0.0.4,<0.1.0` |
 | `reachy2` | `reachy2-sdk >=1.0.15,<1.1.0` |
-| `rebot` | `motorbridge-dep` and `motorbridge-smart-servo-dep` |
-| `yam` | `motorbridge-dep` |
 | `phone` | `hebi-py >=2.8.0,<2.12.0` and `teleop >=0.1.0,<0.2.0` |
 | `fineart_vla_kernels` | `kernels >=0.14.1,<0.15.0` |
 | `hilserl` | `gym-hil >=0.1.14,<0.2.0` |
 | `libero` | `hf-libero >=0.1.4,<0.2.0` (Linux dependency) |
-| `metaworld` | `metaworld ==3.0.0` |
 
 ## Dependencies metadata changes
 
@@ -68,7 +63,6 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 
 ### `lerobot[viz]`
 
-* `pypi` requires `foxglove-sdk >=0.25.1,<0.26.0`, which is not available on conda-forge, so it is removed. `lerobot-viz` supplies Rerun visualization; Foxglove functionality is unavailable through this output.
 * `rerun-sdk` bundles `rerun-notebook`, whose own (unconditional) PyPI metadata requires `ipykernel<7.0.0` (`D2`); conda-forge's `rerun-sdk` package does not declare this, so `ipykernel<7.0.0` is added explicitly to `lerobot-viz`.
 
 ### `lerobot[aloha]`
@@ -83,4 +77,4 @@ For these reasons, we may patch the upstream `pypi` dependencies metadata of `le
 ### `lerobot[all]`
 
 * `pypi` has an additional dependency on `scipy` to "helps pip's resolver " (i.. help on `D1`), so in `conda-forge` we can remove the `scipy` dependency.
-* In `conda-forge`, we remove from `lerobot[all]` all the extras that we do not package in `conda-forge`. The patched `[all]` removes only `reachy2`, `rebot`, `yam`, `hilserl`, `phone`, `libero` and `metaworld`, keeping it in sync with `lerobot-all`.
+* In `conda-forge`, we remove from `lerobot[all]` all the extras that we do not package in `conda-forge`. The patched `[all]` removes only `reachy2`, `hilserl`, `phone` and `libero`, keeping it in sync with `lerobot-all`.
