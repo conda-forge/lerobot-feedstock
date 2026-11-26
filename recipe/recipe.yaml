@@ -220,8 +220,7 @@ outputs:
             then:
               - export SDL_VIDEODRIVER="dummy"
               - export LEROBOT_TEST_DEVICE="cpu"
-          - if: win
-            then: set LEROBOT_TEST_DEVICE=cpu
+            else: set LEROBOT_TEST_DEVICE=cpu
           - python -m pytest -v -m "not gpu" --timeout=60 ${{ representative_tests }}
 
   - package:
