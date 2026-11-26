@@ -1,6 +1,6 @@
 context:
   version: "0.7.0"
-  build_number: 2
+  build_number: 3
   # patch_py311_compat.patch backports PEP 695 syntax and itertools.batched
   # so that the package remains usable with Python 3.11.
   python_min: "3.11"
@@ -142,6 +142,8 @@ outputs:
         - ${{ pin_subpackage('lerobot-hopejr', exact=True) }}
         - ${{ pin_subpackage('lerobot-lekiwi', exact=True) }}
         - ${{ pin_subpackage('lerobot-openarms', exact=True) }}
+        - ${{ pin_subpackage('lerobot-rebot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-yam', exact=True) }}
         - ${{ pin_subpackage('lerobot-kinematics', exact=True) }}
         - ${{ pin_subpackage('lerobot-intelrealsense', exact=True) }}
         - ${{ pin_subpackage('lerobot-diffusion', exact=True) }}
@@ -171,6 +173,7 @@ outputs:
         - ${{ pin_subpackage('lerobot-video-benchmark', exact=True) }}
         - ${{ pin_subpackage('lerobot-aloha', exact=True) }}
         - ${{ pin_subpackage('lerobot-pusht', exact=True) }}
+        - ${{ pin_subpackage('lerobot-metaworld', exact=True) }}
         - ${{ pin_subpackage('lerobot-sarm', exact=True) }}
         - ${{ pin_subpackage('lerobot-robometer', exact=True) }}
         - ${{ pin_subpackage('lerobot-topreward', exact=True) }}
@@ -392,6 +395,7 @@ outputs:
         - python >=${{ python_min }}
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - rerun-sdk >=0.24.0,<0.34.0
+        - foxglove-sdk >=0.25.1,<0.26.0
         - ipykernel <7.0.0
     tests:
       - script:
@@ -817,6 +821,38 @@ outputs:
           python_version: ${{ python_min }}.*
 
   - package:
+      name: lerobot-motorbridge-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - motorbridge >=0.5,<0.6
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-motorbridge-smart-servo-dep
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - motorbridge-smart-servo >=0.0.4,<0.1.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
       name: lerobot-timm-dep
     requirements:
       host:
@@ -914,6 +950,41 @@ outputs:
         - meshcat-python >=0.3.0,<0.4.0
         - ${{ pin_subpackage('lerobot-matplotlib-dep', exact=True) }}
         - ${{ pin_subpackage('lerobot-pygame-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-rebot
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-motorbridge-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-motorbridge-smart-servo-dep', exact=True) }}
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-yam
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-motorbridge-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-can-dep', exact=True) }}
+        - ${{ pin_subpackage('lerobot-placo-dep', exact=True) }}
     tests:
       - python:
           imports:
@@ -1400,6 +1471,24 @@ outputs:
         - ${{ pin_subpackage('lerobot', exact=True) }}
         - scikit-image >=0.23.2,<0.26.0
         - pandas >=2.2.2,<2.4.0
+    tests:
+      - python:
+          imports:
+            - lerobot
+          pip_check: false
+          python_version: ${{ python_min }}.*
+
+  - package:
+      name: lerobot-metaworld
+    requirements:
+      host:
+        - python ${{ python_min }}.*
+      run:
+        - python >=${{ python_min }}
+        - ${{ pin_subpackage('lerobot', exact=True) }}
+        - ${{ pin_subpackage('lerobot-dataset', exact=True) }}
+        - metaworld ==3.0.0
+        - ${{ pin_subpackage('lerobot-scipy-dep', exact=True) }}
     tests:
       - python:
           imports:
